@@ -1,4 +1,4 @@
-module template
+module mystrom
 
 go 1.20
 

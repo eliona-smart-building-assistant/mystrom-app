@@ -3,8 +3,8 @@ package eliona
 import (
 	"context"
 	"fmt"
-	"template/apiserver"
-	"template/conf"
+	"mystrom/apiserver"
+	"mystrom/conf"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
