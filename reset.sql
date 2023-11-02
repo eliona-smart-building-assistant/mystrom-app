@@ -53,18 +53,18 @@ WHERE widget_id IN (
 	SELECT public.widget.id
 	FROM public.widget
 	JOIN public.dashboard USING (dashboard_id)
-	WHERE public.dashboard.name LIKE 'Template%'
+	WHERE public.dashboard.name = 'myStrom'
 );
 
 DELETE FROM public.widget
 WHERE dashboard_id IN (
 	SELECT dashboard_id
 	FROM public.dashboard
-	WHERE name LIKE 'Template%'
+	WHERE name = 'myStrom'
 );
 
 DELETE FROM public.dashboard
-WHERE name LIKE 'Template%';
+WHERE name = 'myStrom';
 
 -- DELETE FROM eliona_app WHERE app_name = 'mystrom';
 -- DELETE FROM eliona_store WHERE app_name = 'mystrom';

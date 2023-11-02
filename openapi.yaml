@@ -176,7 +176,7 @@ paths:
           required: true
           schema:
             type: string
-            example: Template
+            example: myStrom
         - name: projectId
           in: query
           description: Define the project the dashboard should be

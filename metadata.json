@@ -10,7 +10,7 @@
     "de": "Die myStrom App bietet eine nahtlose Integration mit der Eliona-Umgebung."
   },
   "dashboardTemplateNames": [
-    "Template"
+    "myStrom"
   ],
   "apiUrl": "v1",
   "apiSpecificationPath": "/version/openapi.json",
