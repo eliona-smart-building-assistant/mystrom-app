@@ -1,13 +1,13 @@
 {
-  "name": "template",
+  "name": "mystrom-app",
   "elionaMinVersion": "v11.0.0",
   "displayName": {
-    "en": "App template",
-    "de": "App Vorlage"
+    "en": "myStrom App",
+    "de": "myStrom App"
   },
   "description": {
-    "en": "This template can be used to create an app stub for an Eliona environment.",
-    "de": "Diese Vorlage kann verwendet werden um eine App für Eliona zu erstellen."
+    "en": "The myStrom app provides seamless integration with the Eliona environment.",
+    "de": "Die myStrom App bietet eine nahtlose Integration mit der Eliona-Umgebung."
   },
   "dashboardTemplateNames": [
     "Template"
