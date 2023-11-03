@@ -18,9 +18,12 @@ package broker
 import (
 	"fmt"
 	"mystrom/apiserver"
+	nethttp "net/http"
+	"time"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/utils"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
+	"github.com/eliona-smart-building-assistant/go-utils/http"
 )
 
 type Switch struct {
@@ -42,8 +45,49 @@ func (s *Switch) Id() string {
 	return s.AssetType() + "_" + s.ID
 }
 
+type devicesResponse struct {
+	Devices []struct {
+		ID             string  `json:"id"`
+		Name           string  `json:"name"`
+		Power          float32 `json:"power"`
+		WifiSwitchTemp float32 `json:"wifiSwitchTemp"`
+		State          string  `json:"state"`
+	} `json:"devices"`
+	Status string `json:"status"`
+}
+
 func GetDevices(config apiserver.Configuration) ([]Switch, error) {
-	return nil, nil
+	r, err := http.NewRequestWithApiKey("https://mystrom.ch/api/devices", "Auth-Token", config.ApiKey)
+	if err != nil {
+		return nil, fmt.Errorf("creating request for devices: %v", err)
+	}
+	resp, statusCode, err := http.ReadWithStatusCode[devicesResponse](r, time.Duration(*config.RequestTimeout)*time.Second, true)
+	if err != nil {
+		return nil, fmt.Errorf("querying API for devices: %v", err)
+	}
+	if statusCode != nethttp.StatusOK {
+		return nil, fmt.Errorf("querying API for devices: got status %v", statusCode)
+	}
+	if resp.Status != "ok" {
+		return nil, fmt.Errorf("API reports non-ok status: %v", resp.Status)
+	}
+
+	var devices []Switch
+	for _, d := range resp.Devices {
+		relayState := 0
+		if d.State == "on" {
+			relayState = 1
+		}
+		devices = append(devices, Switch{
+			ID:         d.ID,
+			Name:       d.Name,
+			Power:      d.Power,
+			Temp:       d.WifiSwitchTemp,
+			RelayState: relayState,
+		})
+	}
+
+	return devices, nil
 }
 
 func (s *Switch) AdheresToFilter(filter [][]apiserver.FilterRule) (bool, error) {
