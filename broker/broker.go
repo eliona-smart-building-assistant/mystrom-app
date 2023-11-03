@@ -23,18 +23,32 @@ import (
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 )
 
-type ExampleDevice struct {
+type Switch struct {
 	ID   string `eliona:"id" subtype:"info"`
 	Name string `eliona:"name,filterable" subtype:"info"`
+
+	Power      float32 `eliona:"power" subtype:"input"`
+	Temp       float32 `eliona:"temperature" subtype:"input"`
+	RelayState int     `eliona:"relay_state" subtype:"input"`
+
+	Relay int `eliona:"relay" subtype:"output"`
 }
 
-func GetTags(config apiserver.Configuration) ([]ExampleDevice, error) {
+func (s *Switch) AssetType() string {
+	return "mystrom_switch"
+}
+
+func (s *Switch) Id() string {
+	return s.AssetType() + "_" + s.ID
+}
+
+func GetDevices(config apiserver.Configuration) ([]Switch, error) {
 	return nil, nil
 }
 
-func (tag *ExampleDevice) AdheresToFilter(filter [][]apiserver.FilterRule) (bool, error) {
+func (s *Switch) AdheresToFilter(filter [][]apiserver.FilterRule) (bool, error) {
 	f := apiFilterToCommonFilter(filter)
-	fp, err := utils.StructToMap(tag)
+	fp, err := utils.StructToMap(s)
 	if err != nil {
 		return false, fmt.Errorf("converting strict to map: %v", err)
 	}
