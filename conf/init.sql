@@ -19,7 +19,7 @@ create schema if not exists mystrom;
 create table if not exists mystrom.configuration
 (
 	id                   bigserial primary key,
-	api_access_change_me text not null,
+	api_key              text not null,
 	refresh_interval     integer not null default 60,
 	request_timeout      integer not null default 120,
 	asset_filter         json,
