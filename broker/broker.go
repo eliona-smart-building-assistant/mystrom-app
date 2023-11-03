@@ -78,13 +78,19 @@ func GetDevices(config apiserver.Configuration) ([]Switch, error) {
 		if d.State == "on" {
 			relayState = 1
 		}
-		devices = append(devices, Switch{
+		s := Switch{
 			ID:         d.ID,
 			Name:       d.Name,
 			Power:      d.Power,
 			Temp:       d.WifiSwitchTemp,
 			RelayState: relayState,
-		})
+		}
+		if adheres, err := s.AdheresToFilter(config.AssetFilter); err != nil {
+			return nil, fmt.Errorf("checking if adheres to filter: %v", err)
+		} else if !adheres {
+			continue
+		}
+		devices = append(devices, s)
 	}
 
 	return devices, nil
