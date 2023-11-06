@@ -17,12 +17,13 @@ package main
 
 import (
 	"context"
-	"net/http"
-	"sync"
 	"mystrom/apiserver"
 	"mystrom/apiservices"
+	"mystrom/broker"
 	"mystrom/conf"
 	"mystrom/eliona"
+	"net/http"
+	"sync"
 	"time"
 
 	"github.com/eliona-smart-building-assistant/go-utils/common"
@@ -80,7 +81,23 @@ func collectData() {
 }
 
 func collectResources(config *apiserver.Configuration) error {
-	// Do the magic here
+	devices, err := broker.GetDevices(*config)
+	if err != nil {
+		log.Error("broker", "getting devices: %v", err)
+		return err
+	}
+	if err := eliona.CreateAssetsIfNecessary(*config, devices); err != nil {
+		log.Error("eliona", "creating tag assets: %v", err)
+		return err
+	}
+	// if err := eliona.UpsertDeviceData(config, devices); err != nil {
+	// 	log.Error("eliona", "inserting location data into Eliona: %v", err)
+	// 	return err
+	// }
+	for _, device := range devices {
+
+		// todo: subscribe to webhook
+	}
 	return nil
 }
 

@@ -1,0 +1,79 @@
+{
+	"attributes": [
+		{
+			"enable": true,
+			"name": "id",
+			"subtype": "info",
+			"type": "...",
+			"translation": {
+				"de": "...",
+				"en": "..."
+			},
+			"unit": "..."
+		},
+		{
+			"enable": true,
+			"name": "name",
+			"subtype": "info",
+			"type": "...",
+			"translation": {
+				"de": "...",
+				"en": "..."
+			},
+			"unit": "..."
+		},
+		{
+			"enable": true,
+			"name": "power",
+			"subtype": "input",
+			"type": "...",
+			"translation": {
+				"de": "...",
+				"en": "..."
+			},
+			"unit": "..."
+		},
+		{
+			"enable": true,
+			"name": "temperature",
+			"subtype": "input",
+			"type": "...",
+			"translation": {
+				"de": "...",
+				"en": "..."
+			},
+			"unit": "..."
+		},
+		{
+			"enable": true,
+			"name": "relay_state",
+			"subtype": "input",
+			"type": "...",
+			"translation": {
+				"de": "...",
+				"en": "..."
+			},
+			"unit": "..."
+		},
+		{
+			"enable": true,
+			"name": "relay",
+			"subtype": "output",
+			"type": "...",
+			"translation": {
+				"de": "...",
+				"en": "..."
+			},
+			"unit": "..."
+		}
+	],
+	"custom": true,
+	"icon": null,
+	"name": "myStrom_switch",
+	"translation": {
+		"de": "myStrom Schalter",
+		"en": "myStrom Switch"
+	},
+	"urldoc": "https://mystrom.ch",
+	"vendor": "myStrom"
+}

@@ -36,10 +36,12 @@ type Switch struct {
 
 	Relay int `eliona:"relay" subtype:"output"`
 
-	Room struct {
-		ID   string
-		Name string
-	}
+	Room Room
+}
+
+type Room struct {
+	ID   string
+	Name string
 }
 
 func (s *Switch) AssetType() string {
@@ -57,6 +59,7 @@ type devicesResponse struct {
 		Power          float32 `json:"power"`
 		WifiSwitchTemp float32 `json:"wifiSwitchTemp"`
 		State          string  `json:"state"`
+		Type           string  `json:"type"`
 		Room           struct {
 			ID   string `json:"id"`
 			Name string `json:"name"`
@@ -85,6 +88,10 @@ func GetDevices(config apiserver.Configuration) ([]Switch, error) {
 
 	var devices []Switch
 	for _, d := range resp.Devices {
+		if d.Type != "ws2" && d.Type != "wse" {
+			// We suport only WS2 and WSE smart plugs.
+			continue
+		}
 		relayState := 0
 		if d.State == "on" {
 			relayState = 1

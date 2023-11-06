@@ -1,0 +1,12 @@
+{
+	"attributes": [],
+	"custom": false,
+	"icon": null,
+	"name": "mystrom_root",
+	"translation": {
+		"de": "myStrom Root",
+		"en": "myStrom Root"
+	},
+	"urldoc": "https://mystrom.ch",
+	"vendor": "myStrom"
+}
