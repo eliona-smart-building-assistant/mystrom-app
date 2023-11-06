@@ -35,6 +35,11 @@ type Switch struct {
 	RelayState int     `eliona:"relay_state" subtype:"input"`
 
 	Relay int `eliona:"relay" subtype:"output"`
+
+	Room struct {
+		ID   string
+		Name string
+	}
 }
 
 func (s *Switch) AssetType() string {
@@ -52,11 +57,17 @@ type devicesResponse struct {
 		Power          float32 `json:"power"`
 		WifiSwitchTemp float32 `json:"wifiSwitchTemp"`
 		State          string  `json:"state"`
+		Room           struct {
+			ID   string `json:"id"`
+			Name string `json:"name"`
+		} `json:"room"`
 	} `json:"devices"`
 	Status string `json:"status"`
 }
 
 func GetDevices(config apiserver.Configuration) ([]Switch, error) {
+	// API v1 is called here for the rooms list. Be careful not to overuse it, though. No frequent
+	// polling should be done to api v1.
 	r, err := http.NewRequestWithApiKey("https://mystrom.ch/api/devices", "Auth-Token", config.ApiKey)
 	if err != nil {
 		return nil, fmt.Errorf("creating request for devices: %v", err)
@@ -84,6 +95,10 @@ func GetDevices(config apiserver.Configuration) ([]Switch, error) {
 			Power:      d.Power,
 			Temp:       d.WifiSwitchTemp,
 			RelayState: relayState,
+			Room: struct {
+				ID   string
+				Name string
+			}(d.Room),
 		}
 		if adheres, err := s.AdheresToFilter(config.AssetFilter); err != nil {
 			return nil, fmt.Errorf("checking if adheres to filter: %v", err)
