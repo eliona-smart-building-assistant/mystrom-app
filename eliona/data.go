@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"mystrom/apiserver"
+	"mystrom/broker"
 	"mystrom/conf"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
 
-func UpsertAssetData(config apiserver.Configuration, assets []Asset) error {
+func UpsertSwitchData(config apiserver.Configuration, assets []broker.Switch) error {
 	for _, projectId := range *config.ProjectIDs {
 		for _, a := range assets {
 			log.Debug("Eliona", "upserting data for asset: config %d and asset '%v'", config.Id, a.Id())

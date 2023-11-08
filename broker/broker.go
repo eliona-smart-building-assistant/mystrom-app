@@ -39,17 +39,17 @@ type Switch struct {
 	Room Room
 }
 
-type Room struct {
-	ID   string
-	Name string
-}
-
 func (s *Switch) AssetType() string {
 	return "mystrom_switch"
 }
 
 func (s *Switch) Id() string {
 	return s.AssetType() + "_" + s.ID
+}
+
+type Room struct {
+	ID   string
+	Name string
 }
 
 type devicesResponse struct {

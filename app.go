@@ -90,14 +90,14 @@ func collectResources(config *apiserver.Configuration) error {
 		log.Error("eliona", "creating tag assets: %v", err)
 		return err
 	}
-	// if err := eliona.UpsertDeviceData(config, devices); err != nil {
-	// 	log.Error("eliona", "inserting location data into Eliona: %v", err)
-	// 	return err
-	// }
-	for _, device := range devices {
-
-		// todo: subscribe to webhook
+	if err := eliona.UpsertSwitchData(*config, devices); err != nil {
+		log.Error("eliona", "inserting data into Eliona: %v", err)
+		return err
 	}
+	// for _, device := range devices {
+
+	// 	// todo: subscribe to webhook
+	// }
 	return nil
 }
 
