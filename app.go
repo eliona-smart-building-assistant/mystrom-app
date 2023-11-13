@@ -71,35 +71,53 @@ func collectData() {
 
 		common.RunOnceWithParam(func(config apiserver.Configuration) {
 			log.Info("main", "Collecting %d started.", *config.Id)
-			if err := collectResources(&config); err != nil {
+			if err := collectResources(config); err != nil {
 				return // Error is handled in the method itself.
 			}
-			log.Info("main", "Collecting %d finished.", *config.Id)
+			pollTicker := time.NewTicker(time.Second * time.Duration(config.DataPollInterval))
+			defer pollTicker.Stop()
 
-			time.Sleep(time.Second * time.Duration(config.RefreshInterval))
+			done := time.After(time.Second * time.Duration(config.RefreshInterval))
+			for {
+				select {
+				case <-pollTicker.C:
+					pollData(config)
+				case <-done:
+					log.Info("main", "Collecting %d finished.", *config.Id)
+					return
+				}
+			}
 		}, config, *config.Id)
 	}
 }
 
-func collectResources(config *apiserver.Configuration) error {
-	devices, err := broker.GetDevices(*config)
+func collectResources(config apiserver.Configuration) error {
+	devices, err := broker.GetDevices(config)
 	if err != nil {
 		log.Error("broker", "getting devices: %v", err)
 		return err
 	}
-	if err := eliona.CreateAssetsIfNecessary(*config, devices); err != nil {
+	if err := eliona.CreateAssetsIfNecessary(config, devices); err != nil {
 		log.Error("eliona", "creating tag assets: %v", err)
 		return err
 	}
-	if err := eliona.UpsertSwitchData(*config, devices); err != nil {
+	if err := eliona.UpsertSwitchData(config, devices); err != nil {
 		log.Error("eliona", "inserting data into Eliona: %v", err)
 		return err
 	}
-	// for _, device := range devices {
-
-	// 	// todo: subscribe to webhook
-	// }
 	return nil
+}
+
+func pollData(config apiserver.Configuration) {
+	devices, err := broker.GetData(config)
+	if err != nil {
+		log.Error("broker", "getting data: %v", err)
+		return
+	}
+	if err := eliona.UpsertSwitchData(config, devices); err != nil {
+		log.Error("eliona", "inserting data into Eliona: %v", err)
+		return
+	}
 }
 
 // listenForOutputChanges listens to output attribute changes from Eliona. Delete if not needed.

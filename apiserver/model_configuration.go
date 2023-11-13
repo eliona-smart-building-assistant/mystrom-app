@@ -21,8 +21,11 @@ type Configuration struct {
 	// Flag to enable or disable fetching from this API
 	Enable *bool `json:"enable,omitempty"`
 
-	// Interval in seconds for collecting data from API
+	// Interval in seconds for device discovery from API (should not be lower than 1800 to avoid myStrom API overuse)
 	RefreshInterval int32 `json:"refreshInterval,omitempty"`
+
+	// Interval in seconds for collecting data from API
+	DataPollInterval int32 `json:"dataPollInterval,omitempty"`
 
 	// Timeout in seconds
 	RequestTimeout *int32 `json:"requestTimeout,omitempty"`

@@ -18,14 +18,15 @@ create schema if not exists mystrom;
 -- Should be editable by eliona frontend.
 create table if not exists mystrom.configuration
 (
-	id                   bigserial primary key,
-	api_key              text not null,
-	refresh_interval     integer not null default 60,
-	request_timeout      integer not null default 120,
-	asset_filter         json,
-	active               boolean default false,
-	enable               boolean default false,
-	project_ids          text[]
+	id                 bigserial primary key,
+	api_key            text not null,
+	refresh_interval   integer not null default 3600,
+	data_poll_interval integer not null default 60,
+	request_timeout    integer not null default 120,
+	asset_filter       json,
+	active             boolean default false,
+	enable             boolean default false,
+	project_ids        text[]
 );
 
 create table if not exists mystrom.asset

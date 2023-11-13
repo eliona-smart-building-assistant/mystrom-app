@@ -25,57 +25,62 @@ import (
 
 // Configuration is an object representing the database table.
 type Configuration struct {
-	ID              int64             `boil:"id" json:"id" toml:"id" yaml:"id"`
-	APIKey          string            `boil:"api_key" json:"api_key" toml:"api_key" yaml:"api_key"`
-	RefreshInterval int32             `boil:"refresh_interval" json:"refresh_interval" toml:"refresh_interval" yaml:"refresh_interval"`
-	RequestTimeout  int32             `boil:"request_timeout" json:"request_timeout" toml:"request_timeout" yaml:"request_timeout"`
-	AssetFilter     null.JSON         `boil:"asset_filter" json:"asset_filter,omitempty" toml:"asset_filter" yaml:"asset_filter,omitempty"`
-	Active          null.Bool         `boil:"active" json:"active,omitempty" toml:"active" yaml:"active,omitempty"`
-	Enable          null.Bool         `boil:"enable" json:"enable,omitempty" toml:"enable" yaml:"enable,omitempty"`
-	ProjectIds      types.StringArray `boil:"project_ids" json:"project_ids,omitempty" toml:"project_ids" yaml:"project_ids,omitempty"`
+	ID               int64             `boil:"id" json:"id" toml:"id" yaml:"id"`
+	APIKey           string            `boil:"api_key" json:"api_key" toml:"api_key" yaml:"api_key"`
+	RefreshInterval  int32             `boil:"refresh_interval" json:"refresh_interval" toml:"refresh_interval" yaml:"refresh_interval"`
+	DataPollInterval int32             `boil:"data_poll_interval" json:"data_poll_interval" toml:"data_poll_interval" yaml:"data_poll_interval"`
+	RequestTimeout   int32             `boil:"request_timeout" json:"request_timeout" toml:"request_timeout" yaml:"request_timeout"`
+	AssetFilter      null.JSON         `boil:"asset_filter" json:"asset_filter,omitempty" toml:"asset_filter" yaml:"asset_filter,omitempty"`
+	Active           null.Bool         `boil:"active" json:"active,omitempty" toml:"active" yaml:"active,omitempty"`
+	Enable           null.Bool         `boil:"enable" json:"enable,omitempty" toml:"enable" yaml:"enable,omitempty"`
+	ProjectIds       types.StringArray `boil:"project_ids" json:"project_ids,omitempty" toml:"project_ids" yaml:"project_ids,omitempty"`
 
 	R *configurationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L configurationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var ConfigurationColumns = struct {
-	ID              string
-	APIKey          string
-	RefreshInterval string
-	RequestTimeout  string
-	AssetFilter     string
-	Active          string
-	Enable          string
-	ProjectIds      string
+	ID               string
+	APIKey           string
+	RefreshInterval  string
+	DataPollInterval string
+	RequestTimeout   string
+	AssetFilter      string
+	Active           string
+	Enable           string
+	ProjectIds       string
 }{
-	ID:              "id",
-	APIKey:          "api_key",
-	RefreshInterval: "refresh_interval",
-	RequestTimeout:  "request_timeout",
-	AssetFilter:     "asset_filter",
-	Active:          "active",
-	Enable:          "enable",
-	ProjectIds:      "project_ids",
+	ID:               "id",
+	APIKey:           "api_key",
+	RefreshInterval:  "refresh_interval",
+	DataPollInterval: "data_poll_interval",
+	RequestTimeout:   "request_timeout",
+	AssetFilter:      "asset_filter",
+	Active:           "active",
+	Enable:           "enable",
+	ProjectIds:       "project_ids",
 }
 
 var ConfigurationTableColumns = struct {
-	ID              string
-	APIKey          string
-	RefreshInterval string
-	RequestTimeout  string
-	AssetFilter     string
-	Active          string
-	Enable          string
-	ProjectIds      string
+	ID               string
+	APIKey           string
+	RefreshInterval  string
+	DataPollInterval string
+	RequestTimeout   string
+	AssetFilter      string
+	Active           string
+	Enable           string
+	ProjectIds       string
 }{
-	ID:              "configuration.id",
-	APIKey:          "configuration.api_key",
-	RefreshInterval: "configuration.refresh_interval",
-	RequestTimeout:  "configuration.request_timeout",
-	AssetFilter:     "configuration.asset_filter",
-	Active:          "configuration.active",
-	Enable:          "configuration.enable",
-	ProjectIds:      "configuration.project_ids",
+	ID:               "configuration.id",
+	APIKey:           "configuration.api_key",
+	RefreshInterval:  "configuration.refresh_interval",
+	DataPollInterval: "configuration.data_poll_interval",
+	RequestTimeout:   "configuration.request_timeout",
+	AssetFilter:      "configuration.asset_filter",
+	Active:           "configuration.active",
+	Enable:           "configuration.enable",
+	ProjectIds:       "configuration.project_ids",
 }
 
 // Generated where
@@ -178,23 +183,25 @@ func (w whereHelpertypes_StringArray) IsNotNull() qm.QueryMod {
 }
 
 var ConfigurationWhere = struct {
-	ID              whereHelperint64
-	APIKey          whereHelperstring
-	RefreshInterval whereHelperint32
-	RequestTimeout  whereHelperint32
-	AssetFilter     whereHelpernull_JSON
-	Active          whereHelpernull_Bool
-	Enable          whereHelpernull_Bool
-	ProjectIds      whereHelpertypes_StringArray
+	ID               whereHelperint64
+	APIKey           whereHelperstring
+	RefreshInterval  whereHelperint32
+	DataPollInterval whereHelperint32
+	RequestTimeout   whereHelperint32
+	AssetFilter      whereHelpernull_JSON
+	Active           whereHelpernull_Bool
+	Enable           whereHelpernull_Bool
+	ProjectIds       whereHelpertypes_StringArray
 }{
-	ID:              whereHelperint64{field: "\"mystrom\".\"configuration\".\"id\""},
-	APIKey:          whereHelperstring{field: "\"mystrom\".\"configuration\".\"api_key\""},
-	RefreshInterval: whereHelperint32{field: "\"mystrom\".\"configuration\".\"refresh_interval\""},
-	RequestTimeout:  whereHelperint32{field: "\"mystrom\".\"configuration\".\"request_timeout\""},
-	AssetFilter:     whereHelpernull_JSON{field: "\"mystrom\".\"configuration\".\"asset_filter\""},
-	Active:          whereHelpernull_Bool{field: "\"mystrom\".\"configuration\".\"active\""},
-	Enable:          whereHelpernull_Bool{field: "\"mystrom\".\"configuration\".\"enable\""},
-	ProjectIds:      whereHelpertypes_StringArray{field: "\"mystrom\".\"configuration\".\"project_ids\""},
+	ID:               whereHelperint64{field: "\"mystrom\".\"configuration\".\"id\""},
+	APIKey:           whereHelperstring{field: "\"mystrom\".\"configuration\".\"api_key\""},
+	RefreshInterval:  whereHelperint32{field: "\"mystrom\".\"configuration\".\"refresh_interval\""},
+	DataPollInterval: whereHelperint32{field: "\"mystrom\".\"configuration\".\"data_poll_interval\""},
+	RequestTimeout:   whereHelperint32{field: "\"mystrom\".\"configuration\".\"request_timeout\""},
+	AssetFilter:      whereHelpernull_JSON{field: "\"mystrom\".\"configuration\".\"asset_filter\""},
+	Active:           whereHelpernull_Bool{field: "\"mystrom\".\"configuration\".\"active\""},
+	Enable:           whereHelpernull_Bool{field: "\"mystrom\".\"configuration\".\"enable\""},
+	ProjectIds:       whereHelpertypes_StringArray{field: "\"mystrom\".\"configuration\".\"project_ids\""},
 }
 
 // ConfigurationRels is where relationship names are stored.
@@ -225,9 +232,9 @@ func (r *configurationR) GetAssets() AssetSlice {
 type configurationL struct{}
 
 var (
-	configurationAllColumns            = []string{"id", "api_key", "refresh_interval", "request_timeout", "asset_filter", "active", "enable", "project_ids"}
+	configurationAllColumns            = []string{"id", "api_key", "refresh_interval", "data_poll_interval", "request_timeout", "asset_filter", "active", "enable", "project_ids"}
 	configurationColumnsWithoutDefault = []string{"api_key"}
-	configurationColumnsWithDefault    = []string{"id", "refresh_interval", "request_timeout", "asset_filter", "active", "enable", "project_ids"}
+	configurationColumnsWithDefault    = []string{"id", "refresh_interval", "data_poll_interval", "request_timeout", "asset_filter", "active", "enable", "project_ids"}
 	configurationPrimaryKeyColumns     = []string{"id"}
 	configurationGeneratedColumns      = []string{}
 )

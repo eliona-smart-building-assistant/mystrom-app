@@ -230,6 +230,10 @@ components:
           nullable: true
         refreshInterval:
           type: integer
+          description: Interval in seconds for device discovery from API (should not be lower than 1800 to avoid myStrom API overuse)
+          default: 3600
+        dataPollInterval:
+          type: integer
           description: Interval in seconds for collecting data from API
           default: 60
         requestTimeout:

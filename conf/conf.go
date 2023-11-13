@@ -96,6 +96,7 @@ func dbConfigFromApiConfig(apiConfig apiserver.Configuration) (dbConfig appdb.Co
 	dbConfig.ID = null.Int64FromPtr(apiConfig.Id).Int64
 	dbConfig.Enable = null.BoolFromPtr(apiConfig.Enable)
 	dbConfig.RefreshInterval = apiConfig.RefreshInterval
+	dbConfig.DataPollInterval = apiConfig.DataPollInterval
 	if apiConfig.RequestTimeout != nil {
 		dbConfig.RequestTimeout = *apiConfig.RequestTimeout
 	}
@@ -118,6 +119,7 @@ func apiConfigFromDbConfig(dbConfig *appdb.Configuration) (apiConfig apiserver.C
 	apiConfig.Id = &dbConfig.ID
 	apiConfig.Enable = dbConfig.Enable.Ptr()
 	apiConfig.RefreshInterval = dbConfig.RefreshInterval
+	apiConfig.DataPollInterval = dbConfig.DataPollInterval
 	apiConfig.RequestTimeout = &dbConfig.RequestTimeout
 	if dbConfig.AssetFilter.Valid {
 		var af [][]apiserver.FilterRule

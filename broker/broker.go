@@ -118,6 +118,54 @@ func GetDevices(config apiserver.Configuration) ([]Switch, error) {
 	return devices, nil
 }
 
+type devicesResponseV2 struct {
+	Devices []struct {
+		ID          string  `json:"id"`
+		Name        string  `json:"name"`
+		Power       float32 `json:"power"`
+		State       string  `json:"state"`
+		Temperature float32 `json:"temperature"`
+		Type        string  `json:"type"`
+	} `json:"devices"`
+}
+
+func GetData(config apiserver.Configuration) ([]Switch, error) {
+	// API v2 should be the preferred choice when communicating with myStrom. But ideally the
+	// fetching of data should be done using webhooks.
+	r, err := http.NewRequestWithApiKey("https://mystrom.ch/api/v2/devices", "Auth-Token", config.ApiKey)
+	if err != nil {
+		return nil, fmt.Errorf("creating request for devices: %v", err)
+	}
+	resp, statusCode, err := http.ReadWithStatusCode[devicesResponseV2](r, time.Duration(*config.RequestTimeout)*time.Second, true)
+	if err != nil {
+		return nil, fmt.Errorf("querying API for devices: %v", err)
+	}
+	if statusCode != nethttp.StatusOK {
+		return nil, fmt.Errorf("querying API for devices: got status %v", statusCode)
+	}
+
+	var switches []Switch
+	for _, device := range resp.Devices {
+		if device.Type != "WS2" && device.Type != "WSE" {
+			// We suport only WS2 and WSE smart plugs.
+			continue
+		}
+		relayState := 0
+		if device.State == "ON" {
+			relayState = 1
+		}
+		switches = append(switches, Switch{
+			ID:         device.ID,
+			Name:       device.Name,
+			Power:      device.Power,
+			Temp:       device.Temperature,
+			RelayState: relayState,
+		})
+	}
+
+	return switches, nil
+}
+
 func (s *Switch) AdheresToFilter(filter [][]apiserver.FilterRule) (bool, error) {
 	f := apiFilterToCommonFilter(filter)
 	fp, err := utils.StructToMap(s)
