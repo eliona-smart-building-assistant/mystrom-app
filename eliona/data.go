@@ -11,6 +11,8 @@ import (
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
 
+const ClientReference string = "myStrom-app"
+
 func UpsertSwitchData(config apiserver.Configuration, assets []broker.Switch) error {
 	for _, projectId := range *config.ProjectIDs {
 		for _, a := range assets {
@@ -24,8 +26,9 @@ func UpsertSwitchData(config apiserver.Configuration, assets []broker.Switch) er
 			}
 
 			data := asset.Data{
-				AssetId: *assetId,
-				Data:    a,
+				AssetId:         *assetId,
+				Data:            a,
+				ClientReference: ClientReference,
 			}
 			if asset.UpsertAssetDataIfAssetExists(data); err != nil {
 				return fmt.Errorf("upserting data: %v", err)

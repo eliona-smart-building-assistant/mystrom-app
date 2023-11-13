@@ -26,6 +26,7 @@ import (
 	"sync"
 	"time"
 
+	api "github.com/eliona-smart-building-assistant/go-eliona-api-client/v2"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	utilshttp "github.com/eliona-smart-building-assistant/go-utils/http"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
@@ -110,6 +111,11 @@ func listenForOutputChanges() {
 			return
 		}
 		for output := range outputs {
+			clientRef := eliona.ClientReference
+			if output.ClientReference == *api.NewNullableString(&clientRef) {
+				// Just an echoed value this app sent.
+				continue
+			}
 			_ = output
 			// Do the output magic here.
 		}
