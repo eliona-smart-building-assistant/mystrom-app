@@ -2,69 +2,47 @@
 	"attributes": [
 		{
 			"enable": true,
-			"name": "id",
-			"subtype": "info",
-			"type": "...",
-			"translation": {
-				"de": "...",
-				"en": "..."
-			},
-			"unit": "..."
-		},
-		{
-			"enable": true,
-			"name": "name",
-			"subtype": "info",
-			"type": "...",
-			"translation": {
-				"de": "...",
-				"en": "..."
-			},
-			"unit": "..."
-		},
-		{
-			"enable": true,
 			"name": "power",
 			"subtype": "input",
-			"type": "...",
+			"type": "power",
 			"translation": {
-				"de": "...",
-				"en": "..."
+				"de": "Leistung",
+				"en": "Power"
 			},
-			"unit": "..."
+			"unit": "W"
 		},
 		{
 			"enable": true,
 			"name": "temperature",
 			"subtype": "input",
-			"type": "...",
+			"type": "temperature",
 			"translation": {
-				"de": "...",
-				"en": "..."
+				"de": "Temperatur",
+				"en": "Temperature"
 			},
-			"unit": "..."
+			"unit": "˚C"
 		},
 		{
 			"enable": true,
 			"name": "relay_state",
 			"subtype": "input",
-			"type": "...",
+			"type": "inputs-and-switches",
 			"translation": {
-				"de": "...",
-				"en": "..."
+				"de": "Relaiszustand",
+				"en": "Relay State"
 			},
-			"unit": "..."
+			"unit": null
 		},
 		{
 			"enable": true,
 			"name": "relay",
 			"subtype": "output",
-			"type": "...",
+			"type": "inputs-and-switches",
 			"translation": {
-				"de": "...",
-				"en": "..."
+				"de": "Relais",
+				"en": "Relay"
 			},
-			"unit": "..."
+			"unit": null
 		}
 	],
 	"custom": true,
