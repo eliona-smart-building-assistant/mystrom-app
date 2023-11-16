@@ -47,7 +47,7 @@
 	],
 	"custom": true,
 	"icon": null,
-	"name": "myStrom_switch",
+	"name": "mystrom_switch",
 	"translation": {
 		"de": "myStrom Schalter",
 		"en": "myStrom Switch"

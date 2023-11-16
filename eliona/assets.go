@@ -78,7 +78,7 @@ func CreateAssetsIfNecessary(config apiserver.Configuration, devices []broker.Sw
 				projectId:               projectId,
 				parentFunctionalAssetId: &rootAssetID,
 				parentLocationalAssetId: &locParentId,
-				identifier:              fmt.Sprintf("%s_%s", assetType, device.Id()),
+				identifier:              device.Id(),
 				assetType:               assetType,
 				name:                    fmt.Sprintf("%s | %s", device.Room.Name, device.Name),
 				description:             fmt.Sprintf("%s (%v)", device.Name, device.Id()),

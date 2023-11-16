@@ -24,7 +24,7 @@ func UpsertSwitchData(config apiserver.Configuration, assets []broker.Switch) er
 			if assetId == nil {
 				// This might happen in case of filtered or newly added devices.
 				log.Debug("conf", "unable to find asset ID for %v", a.Id())
-				return nil
+				continue
 			}
 
 			data := asset.Data{
