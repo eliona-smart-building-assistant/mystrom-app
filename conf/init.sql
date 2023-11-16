@@ -35,6 +35,7 @@ create table if not exists mystrom.asset
 	configuration_id bigserial not null references mystrom.configuration(id) ON DELETE CASCADE,
 	project_id       text      not null,
 	global_asset_id  text      not null,
+	provider_id      text      not null,
 	asset_id         integer
 );
 

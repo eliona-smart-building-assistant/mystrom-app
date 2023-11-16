@@ -79,6 +79,7 @@ func CreateAssetsIfNecessary(config apiserver.Configuration, devices []broker.Sw
 				parentFunctionalAssetId: &rootAssetID,
 				parentLocationalAssetId: &locParentId,
 				identifier:              device.Id(),
+				providerId:              device.ID,
 				assetType:               assetType,
 				name:                    fmt.Sprintf("%s | %s", device.Room.Name, device.Name),
 				description:             fmt.Sprintf("%s (%v)", device.Name, device.Id()),
@@ -119,6 +120,7 @@ type assetData struct {
 	projectId               string
 	parentFunctionalAssetId *int32
 	parentLocationalAssetId *int32
+	providerId              string
 	identifier              string
 	assetType               string
 	name                    string
@@ -153,7 +155,7 @@ func upsertAsset(d assetData) (created bool, assetID int32, err error) {
 		return false, 0, fmt.Errorf("cannot create asset %s", d.name)
 	}
 
-	if err := conf.InsertAsset(context.Background(), d.config, d.projectId, d.identifier, *newID); err != nil {
+	if err := conf.InsertAsset(context.Background(), d.config, d.projectId, d.identifier, *newID, d.providerId); err != nil {
 		return false, 0, fmt.Errorf("inserting asset to config db: %v", err)
 	}
 

@@ -178,12 +178,13 @@ func SetAllConfigsInactive(ctx context.Context) (int64, error) {
 	})
 }
 
-func InsertAsset(ctx context.Context, config apiserver.Configuration, projId string, globalAssetID string, assetId int32) error {
+func InsertAsset(ctx context.Context, config apiserver.Configuration, projId string, globalAssetID string, assetId int32, providerId string) error {
 	var dbAsset appdb.Asset
 	dbAsset.ConfigurationID = null.Int64FromPtr(config.Id).Int64
 	dbAsset.ProjectID = projId
 	dbAsset.GlobalAssetID = globalAssetID
 	dbAsset.AssetID = null.Int32From(assetId)
+	dbAsset.ProviderID = providerId
 	return dbAsset.InsertG(ctx, boil.Infer())
 }
 
@@ -197,4 +198,22 @@ func GetAssetId(ctx context.Context, config apiserver.Configuration, projId stri
 		return nil, err
 	}
 	return common.Ptr(dbAsset[0].AssetID.Int32), nil
+}
+
+func GetAssetById(assetId int32) (appdb.Asset, error) {
+	asset, err := appdb.Assets(
+		appdb.AssetWhere.AssetID.EQ(null.Int32From(assetId)),
+	).OneG(context.Background())
+	if err != nil {
+		return appdb.Asset{}, fmt.Errorf("fetching asset: %v", err)
+	}
+	return *asset, nil
+}
+
+func GetConfigForAsset(asset appdb.Asset) (apiserver.Configuration, error) {
+	c, err := asset.Configuration().OneG(context.Background())
+	if err != nil {
+		return apiserver.Configuration{}, fmt.Errorf("fetching configuration: %v", err)
+	}
+	return apiConfigFromDbConfig(c)
 }

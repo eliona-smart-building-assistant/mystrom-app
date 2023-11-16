@@ -28,6 +28,7 @@ type Asset struct {
 	ConfigurationID int64      `boil:"configuration_id" json:"configuration_id" toml:"configuration_id" yaml:"configuration_id"`
 	ProjectID       string     `boil:"project_id" json:"project_id" toml:"project_id" yaml:"project_id"`
 	GlobalAssetID   string     `boil:"global_asset_id" json:"global_asset_id" toml:"global_asset_id" yaml:"global_asset_id"`
+	ProviderID      string     `boil:"provider_id" json:"provider_id" toml:"provider_id" yaml:"provider_id"`
 	AssetID         null.Int32 `boil:"asset_id" json:"asset_id,omitempty" toml:"asset_id" yaml:"asset_id,omitempty"`
 
 	R *assetR `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,12 +40,14 @@ var AssetColumns = struct {
 	ConfigurationID string
 	ProjectID       string
 	GlobalAssetID   string
+	ProviderID      string
 	AssetID         string
 }{
 	ID:              "id",
 	ConfigurationID: "configuration_id",
 	ProjectID:       "project_id",
 	GlobalAssetID:   "global_asset_id",
+	ProviderID:      "provider_id",
 	AssetID:         "asset_id",
 }
 
@@ -53,12 +56,14 @@ var AssetTableColumns = struct {
 	ConfigurationID string
 	ProjectID       string
 	GlobalAssetID   string
+	ProviderID      string
 	AssetID         string
 }{
 	ID:              "asset.id",
 	ConfigurationID: "asset.configuration_id",
 	ProjectID:       "asset.project_id",
 	GlobalAssetID:   "asset.global_asset_id",
+	ProviderID:      "asset.provider_id",
 	AssetID:         "asset.asset_id",
 }
 
@@ -157,12 +162,14 @@ var AssetWhere = struct {
 	ConfigurationID whereHelperint64
 	ProjectID       whereHelperstring
 	GlobalAssetID   whereHelperstring
+	ProviderID      whereHelperstring
 	AssetID         whereHelpernull_Int32
 }{
 	ID:              whereHelperint64{field: "\"mystrom\".\"asset\".\"id\""},
 	ConfigurationID: whereHelperint64{field: "\"mystrom\".\"asset\".\"configuration_id\""},
 	ProjectID:       whereHelperstring{field: "\"mystrom\".\"asset\".\"project_id\""},
 	GlobalAssetID:   whereHelperstring{field: "\"mystrom\".\"asset\".\"global_asset_id\""},
+	ProviderID:      whereHelperstring{field: "\"mystrom\".\"asset\".\"provider_id\""},
 	AssetID:         whereHelpernull_Int32{field: "\"mystrom\".\"asset\".\"asset_id\""},
 }
 
@@ -194,8 +201,8 @@ func (r *assetR) GetConfiguration() *Configuration {
 type assetL struct{}
 
 var (
-	assetAllColumns            = []string{"id", "configuration_id", "project_id", "global_asset_id", "asset_id"}
-	assetColumnsWithoutDefault = []string{"project_id", "global_asset_id"}
+	assetAllColumns            = []string{"id", "configuration_id", "project_id", "global_asset_id", "provider_id", "asset_id"}
+	assetColumnsWithoutDefault = []string{"project_id", "global_asset_id", "provider_id"}
 	assetColumnsWithDefault    = []string{"id", "configuration_id", "asset_id"}
 	assetPrimaryKeyColumns     = []string{"id"}
 	assetGeneratedColumns      = []string{}

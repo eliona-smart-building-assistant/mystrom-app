@@ -19,11 +19,13 @@ import (
 	"fmt"
 	"mystrom/apiserver"
 	nethttp "net/http"
+	"net/url"
 	"time"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/utils"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/http"
+	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
 
 type Switch struct {
@@ -164,6 +166,34 @@ func GetData(config apiserver.Configuration) ([]Switch, error) {
 	}
 
 	return switches, nil
+}
+
+func PostData(config apiserver.Configuration, deviceID string, value int64) error {
+	u, err := url.Parse(fmt.Sprintf("https://mystrom.ch/api/v2/device/%s", deviceID))
+	if err != nil {
+		return fmt.Errorf("shouldn't happen: parsing URL: %v", err)
+	}
+	q := u.Query()
+	action := "on"
+	if value == 0 {
+		action = "off"
+	}
+	q.Set("action", action)
+	u.RawQuery = q.Encode()
+	var body interface{}
+	r, err := http.NewPostRequestWithApiKey(u.String(), body, "Auth-Token", config.ApiKey)
+	if err != nil {
+		return fmt.Errorf("creating request for devices: %v", err)
+	}
+	resp, statusCode, err := http.DoWithStatusCode(r, time.Duration(*config.RequestTimeout)*time.Second, true)
+	if err != nil {
+		return fmt.Errorf("querying API for devices: %v", err)
+	}
+	if statusCode != nethttp.StatusOK {
+		return fmt.Errorf("querying API for devices: got status %v and response %s", statusCode, resp)
+	}
+	log.Debug("broker", "posted action %v to device %v", action, deviceID)
+	return nil
 }
 
 func (s *Switch) AdheresToFilter(filter [][]apiserver.FilterRule) (bool, error) {

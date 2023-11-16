@@ -17,12 +17,15 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"mystrom/apiserver"
 	"mystrom/apiservices"
+	"mystrom/appdb"
 	"mystrom/broker"
 	"mystrom/conf"
 	"mystrom/eliona"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
@@ -119,7 +122,7 @@ func pollData(config apiserver.Configuration) {
 	}
 }
 
-// listenForOutputChanges listens to output attribute changes from Eliona. Delete if not needed.
+// listenForOutputChanges listens to output attribute changes from Eliona.
 func listenForOutputChanges() {
 	for { // We want to restart listening in case something breaks.
 		outputs, err := eliona.ListenForOutputChanges()
@@ -132,11 +135,45 @@ func listenForOutputChanges() {
 				// Just an echoed value this app sent.
 				continue
 			}
-			_ = output
-			// Do the output magic here.
+			asset, err := conf.GetAssetById(output.AssetId)
+			if err != nil {
+				log.Error("conf", "getting asset by assetID %v: %v", output.AssetId, err)
+				continue
+			}
+			config, err := conf.GetConfigForAsset(asset)
+			if err != nil {
+				log.Error("conf", "getting configuration for asset id %v: %v", asset.AssetID.Int32, err)
+				continue
+			}
+			if err := outputData(asset, config, output.Data); err != nil {
+				log.Error("conf", "outputting data (%v) for config %v, assetId %v and device id %v: %v", output.Data, config.Id, asset.AssetID.Int32, asset.ProviderID, err)
+				continue
+			}
 		}
 		time.Sleep(time.Second * 5) // Give the server a little break.
 	}
+}
+
+// outputData implements passing output data to broker.
+func outputData(asset appdb.Asset, config apiserver.Configuration, data map[string]interface{}) error {
+	val, ok := data["relay"]
+	if !ok {
+		return fmt.Errorf("data does not contain \"relay\": %v", data)
+	}
+	var value int64
+	var err error
+	switch v := val.(type) {
+	case float64:
+		value = int64(v)
+	case string:
+		if value, err = strconv.ParseInt(v, 10, 64); err != nil {
+			return fmt.Errorf("output: parsing %v: %v", v, err)
+		}
+	default:
+		return fmt.Errorf("output: got value of unknown type: (%T) %v", val, val)
+	}
+
+	return broker.PostData(config, asset.ProviderID, value)
 }
 
 // listenApi starts the API server and listen for requests
