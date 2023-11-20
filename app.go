@@ -149,6 +149,7 @@ func listenForOutputChanges() {
 				log.Error("conf", "outputting data (%v) for config %v, assetId %v and device id %v: %v", output.Data, config.Id, asset.AssetID.Int32, asset.ProviderID, err)
 				continue
 			}
+			pollData(config)
 		}
 		time.Sleep(time.Second * 5) // Give the server a little break.
 	}
