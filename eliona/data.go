@@ -16,7 +16,7 @@ const ClientReference string = "myStrom-app"
 func UpsertSwitchData(config apiserver.Configuration, assets []broker.Switch) error {
 	for _, projectId := range *config.ProjectIDs {
 		for _, a := range assets {
-			log.Debug("Eliona", "upserting data for asset: config %d and asset '%v'", config.Id, a.Id())
+			log.Debug("Eliona", "upserting data %+v for asset: config %d and asset '%v'", a, config.Id, a.Id())
 			assetId, err := conf.GetAssetId(context.Background(), config, projectId, a.Id())
 			if err != nil {
 				return err

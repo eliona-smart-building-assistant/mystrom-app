@@ -104,6 +104,7 @@ func GetDevices(config apiserver.Configuration) ([]Switch, error) {
 			Power:      d.Power,
 			Temp:       d.WifiSwitchTemp,
 			RelayState: relayState,
+			Relay:      relayState,
 			Room: struct {
 				ID   string
 				Name string
@@ -162,6 +163,7 @@ func GetData(config apiserver.Configuration) ([]Switch, error) {
 			Power:      device.Power,
 			Temp:       device.Temperature,
 			RelayState: relayState,
+			Relay:      relayState,
 		})
 	}
 
