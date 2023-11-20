@@ -1,0 +1,30 @@
+{
+	"name": "myStrom Switch list",
+	"custom": true,
+	"translation": {
+		"de": "myStrom Schalterliste",
+		"en": "myStrom Switch list"
+	},
+	"icon": "widgetSlider",
+	"withAlarm": true,
+	"withTimespan": true,
+	"elements": [
+		{
+			"category": "input",
+			"sequence": 1,
+			"config": {
+				"description": "input",
+				"resetTime": 2,
+				"type": "switch"
+			}
+		},
+		{
+			"category": "value",
+			"sequence": 2,
+			"config": {
+				"description": "value",
+				"variant": "tiles"
+			}
+		}
+	]
+}
