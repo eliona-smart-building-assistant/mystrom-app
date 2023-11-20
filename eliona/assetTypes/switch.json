@@ -31,7 +31,17 @@
 				"de": "Relaiszustand",
 				"en": "Relay State"
 			},
-			"unit": null
+			"unit": null,
+			"map": [
+				{
+					"value": 0,
+					"text": "OFF"
+				},
+				{
+					"value": 1,
+					"text": "ON"
+				}
+			]
 		},
 		{
 			"enable": true,
@@ -42,7 +52,17 @@
 				"de": "Relais",
 				"en": "Relay"
 			},
-			"unit": null
+			"unit": null,
+			"map": [
+				{
+					"value": 0,
+					"text": "OFF"
+				},
+				{
+					"value": 1,
+					"text": "ON"
+				}
+			]
 		}
 	],
 	"custom": true,
