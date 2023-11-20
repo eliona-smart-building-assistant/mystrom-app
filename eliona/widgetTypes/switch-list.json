@@ -1,9 +1,9 @@
 {
-	"name": "myStrom Switch list",
+	"name": "myStrom Switch",
 	"custom": true,
 	"translation": {
-		"de": "myStrom Schalterliste",
-		"en": "myStrom Switch list"
+		"de": "myStrom Schalter",
+		"en": "myStrom Switch"
 	},
 	"icon": "widgetSlider",
 	"withAlarm": true,
@@ -19,11 +19,33 @@
 			}
 		},
 		{
-			"category": "value",
+			"category": "trend",
 			"sequence": 2,
 			"config": {
-				"description": "value",
-				"variant": "tiles"
+				"barValues": [],
+				"description": "Power",
+				"guideline": "value",
+				"multipleYAxes": false,
+				"overlap": true,
+				"showCurrent": true,
+				"type": "analog",
+				"variant": "line",
+				"yAxisLabels": "mam"
+			}
+		},
+		{
+			"category": "trend",
+			"sequence": 3,
+			"config": {
+				"barValues": [],
+				"description": "Temperature",
+				"guideline": "value",
+				"multipleYAxes": false,
+				"overlap": true,
+				"showCurrent": true,
+				"type": "analog",
+				"variant": "line",
+				"yAxisLabels": "mam"
 			}
 		}
 	]

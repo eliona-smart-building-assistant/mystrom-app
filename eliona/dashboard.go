@@ -29,19 +29,6 @@ func GetDashboard(projectId string) (api.Dashboard, error) {
 	dashboard.ProjectId = projectId
 	dashboard.Widgets = []api.Widget{}
 
-	rootAssets, _, err := client.NewClient().AssetsAPI.
-		GetAssets(client.AuthenticationContext()).
-		AssetTypeName("mystrom_root").
-		ProjectId(projectId).
-		Execute()
-	if err != nil {
-		return api.Dashboard{}, fmt.Errorf("fetching root asset: %v", err)
-	}
-	if len(rootAssets) != 1 {
-		return api.Dashboard{}, fmt.Errorf("found %v root assets in project %v, expected 1", len(rootAssets), projectId)
-	}
-	rootAsset := rootAssets[0]
-
 	switches, _, err := client.NewClient().AssetsAPI.
 		GetAssets(client.AuthenticationContext()).
 		AssetTypeName("mystrom_switch").
@@ -51,43 +38,71 @@ func GetDashboard(projectId string) (api.Dashboard, error) {
 		return api.Dashboard{}, fmt.Errorf("fetching switches: %v", err)
 	}
 	widgetSequence := int32(0)
-	var switchesData []api.WidgetData
-	for i, sw := range switches {
-		switchesData = append(switchesData, api.WidgetData{
-			ElementSequence: nullableInt32(1),
-			AssetId:         sw.Id,
-			Data: map[string]interface{}{
-				"attribute":   "relay",
-				"description": sw.Name,
-				"key":         "_CURRENT",
-				"seq":         i,
-				"subtype":     "output",
+	for _, sw := range switches {
+		switchesData := []api.WidgetData{
+			{
+				ElementSequence: nullableInt32(1),
+				AssetId:         sw.Id,
+				Data: map[string]interface{}{
+					"attribute":   "relay",
+					"description": sw.Name,
+					"key":         "_CURRENT",
+					"seq":         0,
+					"subtype":     "output",
+				},
 			},
-		})
-		switchesData = append(switchesData, api.WidgetData{
-			ElementSequence: nullableInt32(1),
-			AssetId:         sw.Id,
-			Data: map[string]interface{}{
-				"attribute":   "relay",
-				"description": sw.Name,
-				"key":         "_SETPOINT",
-				"seq":         i,
-				"subtype":     "output",
+			{
+				ElementSequence: nullableInt32(1),
+				AssetId:         sw.Id,
+				Data: map[string]interface{}{
+					"attribute":   "relay",
+					"description": sw.Name,
+					"key":         "_SETPOINT",
+					"seq":         0,
+					"subtype":     "output",
+				},
 			},
+			{
+				ElementSequence: nullableInt32(2),
+				AssetId:         sw.Id,
+				Data: map[string]interface{}{
+					"aggregatedDataField":  nil,
+					"aggregatedDataRaster": nil,
+					"aggregatedDataType":   "heap",
+					"attribute":            "power",
+					"description":          "Power",
+					"key":                  "",
+					"seq":                  0,
+					"subtype":              "input",
+				},
+			},
+			{
+				ElementSequence: nullableInt32(3),
+				AssetId:         sw.Id,
+				Data: map[string]interface{}{
+					"aggregatedDataField":  nil,
+					"aggregatedDataRaster": nil,
+					"aggregatedDataType":   "heap",
+					"attribute":            "temperature",
+					"description":          "Temperature",
+					"key":                  "",
+					"seq":                  0,
+					"subtype":              "input",
+				},
+			},
+		}
+		dashboard.Widgets = append(dashboard.Widgets, api.Widget{
+			WidgetTypeName: "myStrom Switch",
+			AssetId:        sw.Id,
+			Sequence:       nullableInt32(widgetSequence),
+			Details: map[string]any{
+				"size":     1,
+				"timespan": 7,
+			},
+			Data: switchesData,
 		})
+		widgetSequence++
 	}
-	widget := api.Widget{
-		WidgetTypeName: "myStrom Switch list",
-		AssetId:        rootAsset.Id,
-		Sequence:       nullableInt32(widgetSequence),
-		Details: map[string]any{
-			"size":     1,
-			"timespan": 7,
-		},
-		Data: switchesData,
-	}
-	widgetSequence++
-	dashboard.Widgets = append(dashboard.Widgets, widget)
 
 	return dashboard, nil
 }

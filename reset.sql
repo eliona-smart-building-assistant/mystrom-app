@@ -63,8 +63,8 @@ WHERE dashboard_id IN (
 	WHERE name = 'myStrom'
 );
 
-DELETE FROM public.dashboard
-WHERE name = 'myStrom';
+DELETE FROM public.widget_type
+WHERE name LIKE 'myStrom %';
 
 -- DELETE FROM eliona_app WHERE app_name = 'mystrom';
 -- DELETE FROM eliona_store WHERE app_name = 'mystrom';
