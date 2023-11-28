@@ -29,11 +29,6 @@ import (
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
 
-type Asset interface {
-	AssetType() string
-	Id() string
-}
-
 func createRoomAssetIfNecessary(config apiserver.Configuration, projectId string, room broker.Room) (int32, error) {
 	rootAssetID, err := upsertRootAsset(config, projectId)
 	if err != nil {
