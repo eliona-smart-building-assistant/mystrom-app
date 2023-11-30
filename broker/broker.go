@@ -32,9 +32,8 @@ type Switch struct {
 	ID   string `eliona:"id" subtype:"info"`
 	Name string `eliona:"name,filterable" subtype:"info"`
 
-	Power      float32 `eliona:"power" subtype:"input"`
-	Temp       float32 `eliona:"temperature" subtype:"input"`
-	RelayState int     `eliona:"relay_state" subtype:"input"`
+	Power float32 `eliona:"power" subtype:"input"`
+	Temp  float32 `eliona:"temperature" subtype:"input"`
 
 	Relay int `eliona:"relay" subtype:"output"`
 
@@ -99,12 +98,11 @@ func GetDevices(config apiserver.Configuration) ([]Switch, error) {
 			relayState = 1
 		}
 		s := Switch{
-			ID:         d.ID,
-			Name:       d.Name,
-			Power:      d.Power,
-			Temp:       d.WifiSwitchTemp,
-			RelayState: relayState,
-			Relay:      relayState,
+			ID:    d.ID,
+			Name:  d.Name,
+			Power: d.Power,
+			Temp:  d.WifiSwitchTemp,
+			Relay: relayState,
 			Room: struct {
 				ID   string
 				Name string
@@ -158,12 +156,11 @@ func GetData(config apiserver.Configuration) ([]Switch, error) {
 			relayState = 1
 		}
 		switches = append(switches, Switch{
-			ID:         device.ID,
-			Name:       device.Name,
-			Power:      device.Power,
-			Temp:       device.Temperature,
-			RelayState: relayState,
-			Relay:      relayState,
+			ID:    device.ID,
+			Name:  device.Name,
+			Power: device.Power,
+			Temp:  device.Temperature,
+			Relay: relayState,
 		})
 	}
 
