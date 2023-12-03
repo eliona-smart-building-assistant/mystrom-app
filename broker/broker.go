@@ -16,8 +16,11 @@
 package broker
 
 import (
+	"context"
 	"fmt"
 	"mystrom/apiserver"
+	assetupsert "mystrom/asset-upsert"
+	"mystrom/conf"
 	nethttp "net/http"
 	"net/url"
 	"time"
@@ -29,28 +32,139 @@ import (
 )
 
 type Switch struct {
-	ID   string `eliona:"id" subtype:"info"`
-	Name string `eliona:"name,filterable" subtype:"info"`
+	ID   string `eliona:"id"`
+	Name string `eliona:"name,filterable"`
 
 	Power float32 `eliona:"power" subtype:"input"`
 	Temp  float32 `eliona:"temperature" subtype:"input"`
 
 	Relay int `eliona:"relay" subtype:"output"`
 
-	Room Room
+	config *apiserver.Configuration
 }
 
-func (s *Switch) AssetType() string {
+func (s *Switch) GetName() string {
+	return s.Name
+}
+
+func (s *Switch) GetFunctionalChildren() []assetupsert.FunctionalNode {
+	return []assetupsert.FunctionalNode{}
+}
+
+func (s *Switch) GetLocationalChildren() []assetupsert.LocationalNode {
+	return []assetupsert.LocationalNode{}
+}
+
+func (s *Switch) GetAssetType() string {
 	return "mystrom_switch"
 }
 
-func (s *Switch) Id() string {
-	return s.AssetType() + "_" + s.ID
+func (s *Switch) GetGAI() string {
+	return s.GetAssetType() + "_" + s.ID
+}
+
+func (s *Switch) GetDescription() string {
+	return ""
+}
+
+func (s *Switch) GetProjectIDs() []string {
+	return *s.config.ProjectIDs
+}
+
+func (s *Switch) GetAssetID(projectID string) (*int32, error) {
+	fmt.Println("switch")
+	fmt.Println(s.config)
+	return conf.GetAssetId(context.Background(), *s.config, projectID, s.ID)
+}
+
+func (s *Switch) SetAssetID(assetID int32, projectID string) error {
+	if err := conf.InsertAsset(context.Background(), *s.config, projectID, s.GetGAI(), assetID, s.ID); err != nil {
+		return fmt.Errorf("inserting asset to config db: %v", err)
+	}
+	return nil
 }
 
 type Room struct {
 	ID   string
 	Name string
+
+	config *apiserver.Configuration
+
+	switches []Switch
+}
+
+func (r *Room) GetName() string {
+	return r.Name
+}
+func (r *Room) GetAssetType() string {
+	return "mystrom_room"
+}
+
+func (r *Room) GetGAI() string {
+	return r.GetAssetType() + "_" + r.ID
+}
+
+func (r *Room) GetDescription() string {
+	return ""
+}
+
+func (r *Room) GetProjectIDs() []string {
+	return *r.config.ProjectIDs
+}
+
+func (r *Room) GetAssetID(projectID string) (*int32, error) {
+	fmt.Println("room")
+	fmt.Println(r.config)
+
+	return conf.GetAssetId(context.Background(), *r.config, projectID, r.ID)
+}
+
+func (r *Room) SetAssetID(assetID int32, projectID string) error {
+	if err := conf.InsertAsset(context.Background(), *r.config, projectID, r.GetGAI(), assetID, r.ID); err != nil {
+		return fmt.Errorf("inserting asset to config db: %v", err)
+	}
+	return nil
+}
+
+func (r *Room) GetFunctionalChildren() []assetupsert.FunctionalNode {
+	functionalChildren := make([]assetupsert.FunctionalNode, len(r.switches))
+	for i, sw := range r.switches {
+		functionalChildren[i] = &sw
+	}
+	return functionalChildren
+}
+
+func (r *Room) GetLocationalChildren() []assetupsert.LocationalNode {
+	locationalChildren := make([]assetupsert.LocationalNode, len(r.switches))
+	for i, sw := range r.switches {
+		locationalChildren[i] = &sw
+	}
+	return locationalChildren
+}
+
+type Root struct {
+	rooms    map[string]Room
+	switches []Switch
+}
+
+func (r *Root) GetFunctionalChildren() []assetupsert.FunctionalNode {
+	functionalChildren := make([]assetupsert.FunctionalNode, len(r.switches))
+	for i, room := range r.switches {
+		functionalChildren[i] = &room
+	}
+	return functionalChildren
+}
+
+func (r *Root) GetLocationalChildren() []assetupsert.LocationalNode {
+	locationalChildren := make([]assetupsert.LocationalNode, len(r.rooms))
+	for _, sw := range r.rooms {
+		locationalChildren = append(locationalChildren, &sw)
+	}
+	return locationalChildren
+}
+
+func (r *Root) GetDevices() []Switch {
+	return r.switches
 }
 
 type devicesResponse struct {
@@ -69,25 +183,27 @@ type devicesResponse struct {
 	Status string `json:"status"`
 }
 
-func GetDevices(config apiserver.Configuration) ([]Switch, error) {
+func GetDevices(config apiserver.Configuration) (Root, error) {
 	// API v1 is called here for the rooms list. Be careful not to overuse it, though. No frequent
 	// polling should be done to api v1.
 	r, err := http.NewRequestWithApiKey("https://mystrom.ch/api/devices", "Auth-Token", config.ApiKey)
 	if err != nil {
-		return nil, fmt.Errorf("creating request for devices: %v", err)
+		return Root{}, fmt.Errorf("creating request for devices: %v", err)
 	}
 	resp, statusCode, err := http.ReadWithStatusCode[devicesResponse](r, time.Duration(*config.RequestTimeout)*time.Second, true)
 	if err != nil {
-		return nil, fmt.Errorf("querying API for devices: %v", err)
+		return Root{}, fmt.Errorf("querying API for devices: %v", err)
 	}
 	if statusCode != nethttp.StatusOK {
-		return nil, fmt.Errorf("querying API for devices: got status %v", statusCode)
+		return Root{}, fmt.Errorf("querying API for devices: got status %v", statusCode)
 	}
 	if resp.Status != "ok" {
-		return nil, fmt.Errorf("API reports non-ok status: %v", resp.Status)
+		return Root{}, fmt.Errorf("API reports non-ok status: %v", resp.Status)
 	}
 
-	var devices []Switch
+	root := Root{
+		rooms: make(map[string]Room),
+	}
 	for _, d := range resp.Devices {
 		if d.Type != "ws2" && d.Type != "wse" {
 			// We suport only WS2 and WSE smart plugs.
@@ -98,25 +214,32 @@ func GetDevices(config apiserver.Configuration) ([]Switch, error) {
 			relayState = 1
 		}
 		s := Switch{
-			ID:    d.ID,
-			Name:  d.Name,
-			Power: d.Power,
-			Temp:  d.WifiSwitchTemp,
-			Relay: relayState,
-			Room: struct {
-				ID   string
-				Name string
-			}(d.Room),
+			ID:     d.ID,
+			Name:   d.Name,
+			Power:  d.Power,
+			Temp:   d.WifiSwitchTemp,
+			Relay:  relayState,
+			config: &config,
 		}
 		if adheres, err := s.AdheresToFilter(config.AssetFilter); err != nil {
-			return nil, fmt.Errorf("checking if adheres to filter: %v", err)
+			return Root{}, fmt.Errorf("checking if adheres to filter: %v", err)
 		} else if !adheres {
 			continue
 		}
-		devices = append(devices, s)
+		root.switches = append(root.switches, s)
+		r, ok := root.rooms[d.Room.ID]
+		if !ok {
+			r = Room{
+				ID:       d.Room.ID,
+				Name:     d.Room.Name,
+				switches: []Switch{},
+				config:   &config,
+			}
+		}
+		r.switches = append(r.switches, s)
+		root.rooms[d.Room.ID] = r
 	}
-
-	return devices, nil
+	return root, nil
 }
 
 type devicesResponseV2 struct {

@@ -21,6 +21,7 @@ import (
 	"mystrom/apiserver"
 	"mystrom/apiservices"
 	"mystrom/appdb"
+	assetupsert "mystrom/asset-upsert"
 	"mystrom/broker"
 	"mystrom/conf"
 	"mystrom/eliona"
@@ -94,16 +95,17 @@ func collectData() {
 }
 
 func collectResources(config apiserver.Configuration) error {
-	devices, err := broker.GetDevices(config)
+	var _ assetupsert.FunctionalNode = (*broker.Switch)(nil)
+	root, err := broker.GetDevices(config)
 	if err != nil {
-		log.Error("broker", "getting devices: %v", err)
+		log.Error("broker", "getting root: %v", err)
 		return err
 	}
-	if err := eliona.CreateAssetsIfNecessary(config, devices); err != nil {
-		log.Error("eliona", "creating tag assets: %v", err)
+	if err := eliona.CreateAssets(config, &root); err != nil {
+		log.Error("eliona", "creating assets: %v", err)
 		return err
 	}
-	if err := eliona.UpsertSwitchData(config, devices); err != nil {
+	if err := eliona.UpsertSwitchData(config, root.GetDevices()); err != nil {
 		log.Error("eliona", "inserting data into Eliona: %v", err)
 		return err
 	}

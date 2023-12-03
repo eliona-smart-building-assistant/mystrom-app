@@ -16,14 +16,14 @@ const ClientReference string = "myStrom-app"
 func UpsertSwitchData(config apiserver.Configuration, assets []broker.Switch) error {
 	for _, projectId := range *config.ProjectIDs {
 		for _, a := range assets {
-			log.Debug("Eliona", "upserting data %+v for asset: config %d and asset '%v'", a, config.Id, a.Id())
-			assetId, err := conf.GetAssetId(context.Background(), config, projectId, a.Id())
+			log.Debug("Eliona", "upserting data %+v for asset: config %d and asset '%v'", a, config.Id, a.GetGAI())
+			assetId, err := conf.GetAssetId(context.Background(), config, projectId, a.GetGAI())
 			if err != nil {
 				return err
 			}
 			if assetId == nil {
 				// This might happen in case of filtered or newly added devices.
-				log.Debug("conf", "unable to find asset ID for %v", a.Id())
+				log.Debug("conf", "unable to find asset ID for %v", a.GetGAI())
 				continue
 			}
 
