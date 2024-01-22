@@ -23,7 +23,7 @@ type Asset interface {
 	GetDescription() string
 	GetAssetType() string
 	GetGAI() string
-	GetProjectIDs() []string
+	GetProjectIDs() []string // move to a param
 
 	GetAssetID(projectID string) (*int32, error)
 	SetAssetID(assetID int32, projectID string) error

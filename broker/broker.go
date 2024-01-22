@@ -88,7 +88,7 @@ type Room struct {
 	ID   string
 	Name string
 
-	config *apiserver.Configuration
+	config *apiserver.Configuration // get rid of this
 
 	switches []Switch
 }
