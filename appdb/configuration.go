@@ -34,6 +34,7 @@ type Configuration struct {
 	Active           null.Bool         `boil:"active" json:"active,omitempty" toml:"active" yaml:"active,omitempty"`
 	Enable           null.Bool         `boil:"enable" json:"enable,omitempty" toml:"enable" yaml:"enable,omitempty"`
 	ProjectIds       types.StringArray `boil:"project_ids" json:"project_ids,omitempty" toml:"project_ids" yaml:"project_ids,omitempty"`
+	UserID           null.String       `boil:"user_id" json:"user_id,omitempty" toml:"user_id" yaml:"user_id,omitempty"`
 
 	R *configurationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L configurationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -49,6 +50,7 @@ var ConfigurationColumns = struct {
 	Active           string
 	Enable           string
 	ProjectIds       string
+	UserID           string
 }{
 	ID:               "id",
 	APIKey:           "api_key",
@@ -59,6 +61,7 @@ var ConfigurationColumns = struct {
 	Active:           "active",
 	Enable:           "enable",
 	ProjectIds:       "project_ids",
+	UserID:           "user_id",
 }
 
 var ConfigurationTableColumns = struct {
@@ -71,6 +74,7 @@ var ConfigurationTableColumns = struct {
 	Active           string
 	Enable           string
 	ProjectIds       string
+	UserID           string
 }{
 	ID:               "configuration.id",
 	APIKey:           "configuration.api_key",
@@ -81,6 +85,7 @@ var ConfigurationTableColumns = struct {
 	Active:           "configuration.active",
 	Enable:           "configuration.enable",
 	ProjectIds:       "configuration.project_ids",
+	UserID:           "configuration.user_id",
 }
 
 // Generated where
@@ -182,6 +187,56 @@ func (w whereHelpertypes_StringArray) IsNotNull() qm.QueryMod {
 	return qmhelper.WhereIsNotNull(w.field)
 }
 
+type whereHelpernull_String struct{ field string }
+
+func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, false, x)
+}
+func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
+	return qmhelper.WhereNullEQ(w.field, true, x)
+}
+func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LT, x)
+}
+func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.LTE, x)
+}
+func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GT, x)
+}
+func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
+	return qmhelper.Where(w.field, qmhelper.GTE, x)
+}
+func (w whereHelpernull_String) LIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" LIKE ?", x)
+}
+func (w whereHelpernull_String) NLIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" NOT LIKE ?", x)
+}
+func (w whereHelpernull_String) ILIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" ILIKE ?", x)
+}
+func (w whereHelpernull_String) NILIKE(x null.String) qm.QueryMod {
+	return qm.Where(w.field+" NOT ILIKE ?", x)
+}
+func (w whereHelpernull_String) IN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereIn(fmt.Sprintf("%s IN ?", w.field), values...)
+}
+func (w whereHelpernull_String) NIN(slice []string) qm.QueryMod {
+	values := make([]interface{}, 0, len(slice))
+	for _, value := range slice {
+		values = append(values, value)
+	}
+	return qm.WhereNotIn(fmt.Sprintf("%s NOT IN ?", w.field), values...)
+}
+
+func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
+func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
+
 var ConfigurationWhere = struct {
 	ID               whereHelperint64
 	APIKey           whereHelperstring
@@ -192,6 +247,7 @@ var ConfigurationWhere = struct {
 	Active           whereHelpernull_Bool
 	Enable           whereHelpernull_Bool
 	ProjectIds       whereHelpertypes_StringArray
+	UserID           whereHelpernull_String
 }{
 	ID:               whereHelperint64{field: "\"mystrom\".\"configuration\".\"id\""},
 	APIKey:           whereHelperstring{field: "\"mystrom\".\"configuration\".\"api_key\""},
@@ -202,6 +258,7 @@ var ConfigurationWhere = struct {
 	Active:           whereHelpernull_Bool{field: "\"mystrom\".\"configuration\".\"active\""},
 	Enable:           whereHelpernull_Bool{field: "\"mystrom\".\"configuration\".\"enable\""},
 	ProjectIds:       whereHelpertypes_StringArray{field: "\"mystrom\".\"configuration\".\"project_ids\""},
+	UserID:           whereHelpernull_String{field: "\"mystrom\".\"configuration\".\"user_id\""},
 }
 
 // ConfigurationRels is where relationship names are stored.
@@ -232,9 +289,9 @@ func (r *configurationR) GetAssets() AssetSlice {
 type configurationL struct{}
 
 var (
-	configurationAllColumns            = []string{"id", "api_key", "refresh_interval", "data_poll_interval", "request_timeout", "asset_filter", "active", "enable", "project_ids"}
+	configurationAllColumns            = []string{"id", "api_key", "refresh_interval", "data_poll_interval", "request_timeout", "asset_filter", "active", "enable", "project_ids", "user_id"}
 	configurationColumnsWithoutDefault = []string{"api_key"}
-	configurationColumnsWithDefault    = []string{"id", "refresh_interval", "data_poll_interval", "request_timeout", "asset_filter", "active", "enable", "project_ids"}
+	configurationColumnsWithDefault    = []string{"id", "refresh_interval", "data_poll_interval", "request_timeout", "asset_filter", "active", "enable", "project_ids", "user_id"}
 	configurationPrimaryKeyColumns     = []string{"id"}
 	configurationGeneratedColumns      = []string{}
 )
