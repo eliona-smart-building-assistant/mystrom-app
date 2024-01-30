@@ -62,10 +62,6 @@ func (s *Switch) GetDescription() string {
 	return ""
 }
 
-func (s *Switch) GetProjectIDs() []string {
-	return *s.Config.ProjectIDs
-}
-
 func (s *Switch) GetAssetID(projectID string) (*int32, error) {
 	fmt.Println("switch")
 	fmt.Println(s.Config)
@@ -101,10 +97,6 @@ func (r *Room) GetGAI() string {
 
 func (r *Room) GetDescription() string {
 	return ""
-}
-
-func (r *Room) GetProjectIDs() []string {
-	return *r.Config.ProjectIDs
 }
 
 func (r *Room) GetAssetID(projectID string) (*int32, error) {
