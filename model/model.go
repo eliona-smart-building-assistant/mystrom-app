@@ -63,7 +63,7 @@ func (s *Switch) GetDescription() string {
 }
 
 func (s *Switch) GetAssetID(projectID string) (*int32, error) {
-	return conf.GetAssetId(context.Background(), *s.Config, projectID, s.ID)
+	return conf.GetAssetId(context.Background(), *s.Config, projectID, s.GetGAI())
 }
 
 func (s *Switch) SetAssetID(assetID int32, projectID string) error {
@@ -98,7 +98,7 @@ func (r *Room) GetDescription() string {
 }
 
 func (r *Room) GetAssetID(projectID string) (*int32, error) {
-	return conf.GetAssetId(context.Background(), *r.Config, projectID, r.ID)
+	return conf.GetAssetId(context.Background(), *r.Config, projectID, r.GetGAI())
 }
 
 func (r *Room) SetAssetID(assetID int32, projectID string) error {
@@ -139,19 +139,19 @@ func (r *Root) GetAssetType() string {
 }
 
 func (r *Root) GetGAI() string {
-	return r.GetAssetType() + "_" + "root"
+	return r.GetAssetType()
 }
 
 func (r *Root) GetDescription() string {
-	return ""
+	return "Root asset for myStrom devices"
 }
 
 func (r *Root) GetAssetID(projectID string) (*int32, error) {
-	return conf.GetAssetId(context.Background(), *r.Config, projectID, "root")
+	return conf.GetAssetId(context.Background(), *r.Config, projectID, r.GetGAI())
 }
 
 func (r *Root) SetAssetID(assetID int32, projectID string) error {
-	if err := conf.InsertAsset(context.Background(), *r.Config, projectID, r.GetGAI(), assetID, "root"); err != nil {
+	if err := conf.InsertAsset(context.Background(), *r.Config, projectID, r.GetGAI(), assetID, ""); err != nil {
 		return fmt.Errorf("inserting asset to Config db: %v", err)
 	}
 	return nil
