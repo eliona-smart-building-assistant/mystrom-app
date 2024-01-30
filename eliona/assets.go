@@ -29,12 +29,7 @@ import (
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
 
-type RootAsset interface {
-	GetLocationalChildren() []assetupsert.LocationalNode
-	GetFunctionalChildren() []assetupsert.FunctionalNode
-}
-
-func CreateAssets(config apiserver.Configuration, root RootAsset) error {
+func CreateAssets(config apiserver.Configuration, root assetupsert.Root) error {
 	for _, projectId := range *config.ProjectIDs {
 		rootAssetID, err := upsertRootAsset(config, projectId)
 		if err != nil {

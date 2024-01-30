@@ -8,6 +8,11 @@ import (
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 )
 
+type Root interface {
+	LocationalNode
+	FunctionalNode
+}
+
 type LocationalNode interface {
 	Asset
 	GetLocationalChildren() []LocationalNode

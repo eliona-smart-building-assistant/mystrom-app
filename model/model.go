@@ -63,8 +63,6 @@ func (s *Switch) GetDescription() string {
 }
 
 func (s *Switch) GetAssetID(projectID string) (*int32, error) {
-	fmt.Println("switch")
-	fmt.Println(s.Config)
 	return conf.GetAssetId(context.Background(), *s.Config, projectID, s.ID)
 }
 
@@ -129,6 +127,34 @@ func (r *Room) GetLocationalChildren() []assetupsert.LocationalNode {
 type Root struct {
 	Rooms    map[string]Room
 	Switches []Switch
+
+	Config *apiserver.Configuration
+}
+
+func (r *Root) GetName() string {
+	return "myStrom"
+}
+func (r *Root) GetAssetType() string {
+	return "mystrom_root"
+}
+
+func (r *Root) GetGAI() string {
+	return r.GetAssetType() + "_" + "root"
+}
+
+func (r *Root) GetDescription() string {
+	return ""
+}
+
+func (r *Root) GetAssetID(projectID string) (*int32, error) {
+	return conf.GetAssetId(context.Background(), *r.Config, projectID, "root")
+}
+
+func (r *Root) SetAssetID(assetID int32, projectID string) error {
+	if err := conf.InsertAsset(context.Background(), *r.Config, projectID, r.GetGAI(), assetID, "root"); err != nil {
+		return fmt.Errorf("inserting asset to Config db: %v", err)
+	}
+	return nil
 }
 
 func (r *Root) GetFunctionalChildren() []assetupsert.FunctionalNode {
