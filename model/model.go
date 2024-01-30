@@ -38,16 +38,25 @@ type Switch struct {
 	Config *apiserver.Configuration
 }
 
+func (s *Switch) AdheresToFilter(filter [][]apiserver.FilterRule) (bool, error) {
+	f := apiFilterToCommonFilter(filter)
+	fp, err := utils.StructToMap(s)
+	if err != nil {
+		return false, fmt.Errorf("converting strict to map: %v", err)
+	}
+	adheres, err := common.Filter(f, fp)
+	if err != nil {
+		return false, err
+	}
+	return adheres, nil
+}
+
 func (s *Switch) GetName() string {
 	return s.Name
 }
 
-func (s *Switch) GetFunctionalChildren() []assetupsert.FunctionalNode {
-	return []assetupsert.FunctionalNode{}
-}
-
-func (s *Switch) GetLocationalChildren() []assetupsert.LocationalNode {
-	return []assetupsert.LocationalNode{}
+func (s *Switch) GetDescription() string {
+	return ""
 }
 
 func (s *Switch) GetAssetType() string {
@@ -56,10 +65,6 @@ func (s *Switch) GetAssetType() string {
 
 func (s *Switch) GetGAI() string {
 	return s.GetAssetType() + "_" + s.ID
-}
-
-func (s *Switch) GetDescription() string {
-	return ""
 }
 
 func (s *Switch) GetAssetID(projectID string) (*int32, error) {
@@ -71,6 +76,14 @@ func (s *Switch) SetAssetID(assetID int32, projectID string) error {
 		return fmt.Errorf("inserting asset to Config db: %v", err)
 	}
 	return nil
+}
+
+func (s *Switch) GetLocationalChildren() []assetupsert.LocationalNode {
+	return []assetupsert.LocationalNode{}
+}
+
+func (s *Switch) GetFunctionalChildren() []assetupsert.FunctionalNode {
+	return []assetupsert.FunctionalNode{}
 }
 
 type Room struct {
@@ -85,16 +98,17 @@ type Room struct {
 func (r *Room) GetName() string {
 	return r.Name
 }
+
+func (r *Room) GetDescription() string {
+	return ""
+}
+
 func (r *Room) GetAssetType() string {
 	return "mystrom_room"
 }
 
 func (r *Room) GetGAI() string {
 	return r.GetAssetType() + "_" + r.ID
-}
-
-func (r *Room) GetDescription() string {
-	return ""
 }
 
 func (r *Room) GetAssetID(projectID string) (*int32, error) {
@@ -108,20 +122,20 @@ func (r *Room) SetAssetID(assetID int32, projectID string) error {
 	return nil
 }
 
-func (r *Room) GetFunctionalChildren() []assetupsert.FunctionalNode {
-	functionalChildren := make([]assetupsert.FunctionalNode, len(r.Switches))
-	for i, sw := range r.Switches {
-		functionalChildren[i] = &sw
-	}
-	return functionalChildren
-}
-
 func (r *Room) GetLocationalChildren() []assetupsert.LocationalNode {
 	locationalChildren := make([]assetupsert.LocationalNode, len(r.Switches))
 	for i, sw := range r.Switches {
 		locationalChildren[i] = &sw
 	}
 	return locationalChildren
+}
+
+func (r *Room) GetFunctionalChildren() []assetupsert.FunctionalNode {
+	functionalChildren := make([]assetupsert.FunctionalNode, len(r.Switches))
+	for i, sw := range r.Switches {
+		functionalChildren[i] = &sw
+	}
+	return functionalChildren
 }
 
 type Root struct {
@@ -131,19 +145,24 @@ type Root struct {
 	Config *apiserver.Configuration
 }
 
+func (r *Root) GetDevices() []Switch {
+	return r.Switches
+}
+
 func (r *Root) GetName() string {
 	return "myStrom"
 }
+
+func (r *Root) GetDescription() string {
+	return "Root asset for myStrom devices"
+}
+
 func (r *Root) GetAssetType() string {
 	return "mystrom_root"
 }
 
 func (r *Root) GetGAI() string {
 	return r.GetAssetType()
-}
-
-func (r *Root) GetDescription() string {
-	return "Root asset for myStrom devices"
 }
 
 func (r *Root) GetAssetID(projectID string) (*int32, error) {
@@ -157,14 +176,6 @@ func (r *Root) SetAssetID(assetID int32, projectID string) error {
 	return nil
 }
 
-func (r *Root) GetFunctionalChildren() []assetupsert.FunctionalNode {
-	functionalChildren := make([]assetupsert.FunctionalNode, len(r.Switches))
-	for i, room := range r.Switches {
-		functionalChildren[i] = &room
-	}
-	return functionalChildren
-}
-
 func (r *Root) GetLocationalChildren() []assetupsert.LocationalNode {
 	locationalChildren := make([]assetupsert.LocationalNode, len(r.Rooms))
 	for _, sw := range r.Rooms {
@@ -173,22 +184,15 @@ func (r *Root) GetLocationalChildren() []assetupsert.LocationalNode {
 	return locationalChildren
 }
 
-func (r *Root) GetDevices() []Switch {
-	return r.Switches
+func (r *Root) GetFunctionalChildren() []assetupsert.FunctionalNode {
+	functionalChildren := make([]assetupsert.FunctionalNode, len(r.Switches))
+	for i, room := range r.Switches {
+		functionalChildren[i] = &room
+	}
+	return functionalChildren
 }
 
-func (s *Switch) AdheresToFilter(filter [][]apiserver.FilterRule) (bool, error) {
-	f := apiFilterToCommonFilter(filter)
-	fp, err := utils.StructToMap(s)
-	if err != nil {
-		return false, fmt.Errorf("converting strict to map: %v", err)
-	}
-	adheres, err := common.Filter(f, fp)
-	if err != nil {
-		return false, err
-	}
-	return adheres, nil
-}
+//
 
 func apiFilterToCommonFilter(input [][]apiserver.FilterRule) [][]common.FilterRule {
 	result := make([][]common.FilterRule, len(input))
