@@ -16,156 +16,16 @@
 package broker
 
 import (
-	"context"
 	"fmt"
 	"mystrom/apiserver"
-	assetupsert "mystrom/asset-upsert"
-	"mystrom/conf"
+	"mystrom/model"
 	nethttp "net/http"
 	"net/url"
 	"time"
 
-	"github.com/eliona-smart-building-assistant/go-eliona/utils"
-	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/http"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
-
-type Switch struct {
-	ID   string `eliona:"id"`
-	Name string `eliona:"name,filterable"`
-
-	Power float32 `eliona:"power" subtype:"input"`
-	Temp  float32 `eliona:"temperature" subtype:"input"`
-
-	Relay int `eliona:"relay" subtype:"output"`
-
-	config *apiserver.Configuration
-}
-
-func (s *Switch) GetName() string {
-	return s.Name
-}
-
-func (s *Switch) GetFunctionalChildren() []assetupsert.FunctionalNode {
-	return []assetupsert.FunctionalNode{}
-}
-
-func (s *Switch) GetLocationalChildren() []assetupsert.LocationalNode {
-	return []assetupsert.LocationalNode{}
-}
-
-func (s *Switch) GetAssetType() string {
-	return "mystrom_switch"
-}
-
-func (s *Switch) GetGAI() string {
-	return s.GetAssetType() + "_" + s.ID
-}
-
-func (s *Switch) GetDescription() string {
-	return ""
-}
-
-func (s *Switch) GetProjectIDs() []string {
-	return *s.config.ProjectIDs
-}
-
-func (s *Switch) GetAssetID(projectID string) (*int32, error) {
-	fmt.Println("switch")
-	fmt.Println(s.config)
-	return conf.GetAssetId(context.Background(), *s.config, projectID, s.ID)
-}
-
-func (s *Switch) SetAssetID(assetID int32, projectID string) error {
-	if err := conf.InsertAsset(context.Background(), *s.config, projectID, s.GetGAI(), assetID, s.ID); err != nil {
-		return fmt.Errorf("inserting asset to config db: %v", err)
-	}
-	return nil
-}
-
-type Room struct {
-	ID   string
-	Name string
-
-	config *apiserver.Configuration // get rid of this
-
-	switches []Switch
-}
-
-func (r *Room) GetName() string {
-	return r.Name
-}
-func (r *Room) GetAssetType() string {
-	return "mystrom_room"
-}
-
-func (r *Room) GetGAI() string {
-	return r.GetAssetType() + "_" + r.ID
-}
-
-func (r *Room) GetDescription() string {
-	return ""
-}
-
-func (r *Room) GetProjectIDs() []string {
-	return *r.config.ProjectIDs
-}
-
-func (r *Room) GetAssetID(projectID string) (*int32, error) {
-	fmt.Println("room")
-	fmt.Println(r.config)
-
-	return conf.GetAssetId(context.Background(), *r.config, projectID, r.ID)
-}
-
-func (r *Room) SetAssetID(assetID int32, projectID string) error {
-	if err := conf.InsertAsset(context.Background(), *r.config, projectID, r.GetGAI(), assetID, r.ID); err != nil {
-		return fmt.Errorf("inserting asset to config db: %v", err)
-	}
-	return nil
-}
-
-func (r *Room) GetFunctionalChildren() []assetupsert.FunctionalNode {
-	functionalChildren := make([]assetupsert.FunctionalNode, len(r.switches))
-	for i, sw := range r.switches {
-		functionalChildren[i] = &sw
-	}
-	return functionalChildren
-}
-
-func (r *Room) GetLocationalChildren() []assetupsert.LocationalNode {
-	locationalChildren := make([]assetupsert.LocationalNode, len(r.switches))
-	for i, sw := range r.switches {
-		locationalChildren[i] = &sw
-	}
-	return locationalChildren
-}
-
-type Root struct {
-	rooms    map[string]Room
-	switches []Switch
-}
-
-func (r *Root) GetFunctionalChildren() []assetupsert.FunctionalNode {
-	functionalChildren := make([]assetupsert.FunctionalNode, len(r.switches))
-	for i, room := range r.switches {
-		functionalChildren[i] = &room
-	}
-	return functionalChildren
-}
-
-func (r *Root) GetLocationalChildren() []assetupsert.LocationalNode {
-	locationalChildren := make([]assetupsert.LocationalNode, len(r.rooms))
-	for _, sw := range r.rooms {
-		locationalChildren = append(locationalChildren, &sw)
-	}
-	return locationalChildren
-}
-
-func (r *Root) GetDevices() []Switch {
-	return r.switches
-}
 
 type devicesResponse struct {
 	Devices []struct {
@@ -183,26 +43,26 @@ type devicesResponse struct {
 	Status string `json:"status"`
 }
 
-func GetDevices(config apiserver.Configuration) (Root, error) {
+func GetDevices(config apiserver.Configuration) (model.Root, error) {
 	// API v1 is called here for the rooms list. Be careful not to overuse it, though. No frequent
 	// polling should be done to api v1.
 	r, err := http.NewRequestWithApiKey("https://mystrom.ch/api/devices", "Auth-Token", config.ApiKey)
 	if err != nil {
-		return Root{}, fmt.Errorf("creating request for devices: %v", err)
+		return model.Root{}, fmt.Errorf("creating request for devices: %v", err)
 	}
 	resp, statusCode, err := http.ReadWithStatusCode[devicesResponse](r, time.Duration(*config.RequestTimeout)*time.Second, true)
 	if err != nil {
-		return Root{}, fmt.Errorf("querying API for devices: %v", err)
+		return model.Root{}, fmt.Errorf("querying API for devices: %v", err)
 	}
 	if statusCode != nethttp.StatusOK {
-		return Root{}, fmt.Errorf("querying API for devices: got status %v", statusCode)
+		return model.Root{}, fmt.Errorf("querying API for devices: got status %v", statusCode)
 	}
 	if resp.Status != "ok" {
-		return Root{}, fmt.Errorf("API reports non-ok status: %v", resp.Status)
+		return model.Root{}, fmt.Errorf("API reports non-ok status: %v", resp.Status)
 	}
 
-	root := Root{
-		rooms: make(map[string]Room),
+	root := model.Root{
+		Rooms: make(map[string]model.Room),
 	}
 	for _, d := range resp.Devices {
 		if d.Type != "ws2" && d.Type != "wse" {
@@ -213,31 +73,31 @@ func GetDevices(config apiserver.Configuration) (Root, error) {
 		if d.State == "on" {
 			relayState = 1
 		}
-		s := Switch{
+		s := model.Switch{
 			ID:     d.ID,
 			Name:   d.Name,
 			Power:  d.Power,
 			Temp:   d.WifiSwitchTemp,
 			Relay:  relayState,
-			config: &config,
+			Config: &config,
 		}
 		if adheres, err := s.AdheresToFilter(config.AssetFilter); err != nil {
-			return Root{}, fmt.Errorf("checking if adheres to filter: %v", err)
+			return model.Root{}, fmt.Errorf("checking if adheres to filter: %v", err)
 		} else if !adheres {
 			continue
 		}
-		root.switches = append(root.switches, s)
-		r, ok := root.rooms[d.Room.ID]
+		root.Switches = append(root.Switches, s)
+		r, ok := root.Rooms[d.Room.ID]
 		if !ok {
-			r = Room{
+			r = model.Room{
 				ID:       d.Room.ID,
 				Name:     d.Room.Name,
-				switches: []Switch{},
-				config:   &config,
+				Switches: []model.Switch{},
+				Config:   &config,
 			}
 		}
-		r.switches = append(r.switches, s)
-		root.rooms[d.Room.ID] = r
+		r.Switches = append(r.Switches, s)
+		root.Rooms[d.Room.ID] = r
 	}
 	return root, nil
 }
@@ -253,7 +113,7 @@ type devicesResponseV2 struct {
 	} `json:"devices"`
 }
 
-func GetData(config apiserver.Configuration) ([]Switch, error) {
+func GetData(config apiserver.Configuration) ([]model.Switch, error) {
 	// API v2 should be the preferred choice when communicating with myStrom. But ideally the
 	// fetching of data should be done using webhooks.
 	r, err := http.NewRequestWithApiKey("https://mystrom.ch/api/v2/devices", "Auth-Token", config.ApiKey)
@@ -268,7 +128,7 @@ func GetData(config apiserver.Configuration) ([]Switch, error) {
 		return nil, fmt.Errorf("querying API for devices: got status %v", statusCode)
 	}
 
-	var switches []Switch
+	var switches []model.Switch
 	for _, device := range resp.Devices {
 		if device.Type != "WS2" && device.Type != "WSE" {
 			// We suport only WS2 and WSE smart plugs.
@@ -278,7 +138,7 @@ func GetData(config apiserver.Configuration) ([]Switch, error) {
 		if device.State == "ON" {
 			relayState = 1
 		}
-		switches = append(switches, Switch{
+		switches = append(switches, model.Switch{
 			ID:    device.ID,
 			Name:  device.Name,
 			Power: device.Power,
@@ -316,31 +176,4 @@ func PostData(config apiserver.Configuration, deviceID string, value int64) erro
 	}
 	log.Debug("broker", "posted action %v to device %v", action, deviceID)
 	return nil
-}
-
-func (s *Switch) AdheresToFilter(filter [][]apiserver.FilterRule) (bool, error) {
-	f := apiFilterToCommonFilter(filter)
-	fp, err := utils.StructToMap(s)
-	if err != nil {
-		return false, fmt.Errorf("converting strict to map: %v", err)
-	}
-	adheres, err := common.Filter(f, fp)
-	if err != nil {
-		return false, err
-	}
-	return adheres, nil
-}
-
-func apiFilterToCommonFilter(input [][]apiserver.FilterRule) [][]common.FilterRule {
-	result := make([][]common.FilterRule, len(input))
-	for i := 0; i < len(input); i++ {
-		result[i] = make([]common.FilterRule, len(input[i]))
-		for j := 0; j < len(input[i]); j++ {
-			result[i][j] = common.FilterRule{
-				Parameter: input[i][j].Parameter,
-				Regex:     input[i][j].Regex,
-			}
-		}
-	}
-	return result
 }

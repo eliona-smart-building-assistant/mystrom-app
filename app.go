@@ -25,6 +25,7 @@ import (
 	"mystrom/broker"
 	"mystrom/conf"
 	"mystrom/eliona"
+	"mystrom/model"
 	"net/http"
 	"strconv"
 	"sync"
@@ -95,7 +96,7 @@ func collectData() {
 }
 
 func collectResources(config apiserver.Configuration) error {
-	var _ assetupsert.FunctionalNode = (*broker.Switch)(nil)
+	var _ assetupsert.FunctionalNode = (*model.Switch)(nil)
 	root, err := broker.GetDevices(config)
 	if err != nil {
 		log.Error("broker", "getting root: %v", err)

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"mystrom/apiserver"
-	"mystrom/broker"
 	"mystrom/conf"
+	"mystrom/model"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
@@ -13,7 +13,7 @@ import (
 
 const ClientReference string = "myStrom-app"
 
-func UpsertSwitchData(config apiserver.Configuration, assets []broker.Switch) error {
+func UpsertSwitchData(config apiserver.Configuration, assets []model.Switch) error {
 	for _, projectId := range *config.ProjectIDs {
 		for _, a := range assets {
 			log.Debug("Eliona", "upserting data %+v for asset: config %d and asset '%v'", a, config.Id, a.GetGAI())
