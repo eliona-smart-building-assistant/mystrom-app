@@ -36,28 +36,22 @@ func CreateAssets(config apiserver.Configuration, root assetupsert.Root) error {
 }
 
 // TODO: Notify users. Currently not implemented.
-func notifyUsers(projectId string, assetsCreated int) error {
-	users, _, err := client.NewClient().UsersAPI.GetUsers(client.AuthenticationContext()).Execute()
+func notifyUser(userId string, projectId string, assetsCreated int) error {
+	receipt, _, err := client.NewClient().CommunicationAPI.
+		PostNotification(client.AuthenticationContext()).
+		Notification(
+			api.Notification{
+				User:      userId,
+				ProjectId: *api.NewNullableString(&projectId),
+				Message: *api.NewNullableTranslation(&api.Translation{
+					De: api.PtrString(fmt.Sprintf("myStrom App hat %d neue Assets angelegt. Diese sind nun im Asset-Management verfügbar.", assetsCreated)),
+					En: api.PtrString(fmt.Sprintf("myStrom app added %v new assets. They are now available in Asset Management.", assetsCreated)),
+				}),
+			}).
+		Execute()
+	log.Debug("eliona", "posted notification about CAC: %v", receipt)
 	if err != nil {
-		return fmt.Errorf("fetching all users: %v", err)
-	}
-	for _, user := range users {
-		n := api.Notification{
-			User:      user.Email,
-			ProjectId: *api.NewNullableString(&projectId),
-			Message: *api.NewNullableTranslation(&api.Translation{
-				De: api.PtrString(fmt.Sprintf("Die kontinuierliche Asset-Erstellung für myStrom hat %v neue Assets hinzugefügt. Diese sind nun im Asset-Management verfügbar.", assetsCreated)),
-				En: api.PtrString(fmt.Sprintf("The Continuous Asset Creation for myStrom added %v new assets. They are now available in Asset Management.", assetsCreated)),
-			}),
-		}
-		receipt, _, err := client.NewClient().CommunicationAPI.
-			PostNotification(client.AuthenticationContext()).
-			Notification(n).
-			Execute()
-		log.Debug("eliona", "posted notification about CAC: %v", receipt)
-		if err != nil {
-			return fmt.Errorf("posting notification: %v", err)
-		}
+		return fmt.Errorf("posting CAC notification: %v", err)
 	}
 	return nil
 }
