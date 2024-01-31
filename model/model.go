@@ -124,16 +124,18 @@ func (r *Room) SetAssetID(assetID int32, projectID string) error {
 
 func (r *Room) GetLocationalChildren() []assetupsert.LocationalNode {
 	locationalChildren := make([]assetupsert.LocationalNode, len(r.Switches))
-	for i, sw := range r.Switches {
-		locationalChildren[i] = &sw
+	for _, room := range r.Switches {
+		roomCopy := room // Create a copy of room
+		locationalChildren = append(locationalChildren, &roomCopy)
 	}
 	return locationalChildren
 }
 
 func (r *Room) GetFunctionalChildren() []assetupsert.FunctionalNode {
 	functionalChildren := make([]assetupsert.FunctionalNode, len(r.Switches))
-	for i, sw := range r.Switches {
-		functionalChildren[i] = &sw
+	for _, room := range r.Switches {
+		roomCopy := room // Create a copy of room
+		functionalChildren = append(functionalChildren, &roomCopy)
 	}
 	return functionalChildren
 }
@@ -179,15 +181,16 @@ func (r *Root) SetAssetID(assetID int32, projectID string) error {
 func (r *Root) GetLocationalChildren() []assetupsert.LocationalNode {
 	locationalChildren := make([]assetupsert.LocationalNode, 0)
 	for _, room := range r.Rooms {
-		locationalChildren = append(locationalChildren, &room)
+		roomCopy := room // Create a copy of room
+		locationalChildren = append(locationalChildren, &roomCopy)
 	}
 	return locationalChildren
 }
 
 func (r *Root) GetFunctionalChildren() []assetupsert.FunctionalNode {
 	functionalChildren := make([]assetupsert.FunctionalNode, len(r.Switches))
-	for i, sw := range r.Switches {
-		functionalChildren[i] = &sw
+	for i := range r.Switches {
+		functionalChildren[i] = &r.Switches[i]
 	}
 	return functionalChildren
 }
