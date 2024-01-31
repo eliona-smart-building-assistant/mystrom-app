@@ -16,22 +16,18 @@
 package eliona
 
 import (
-	"context"
 	"fmt"
 	"mystrom/apiserver"
 	assetupsert "mystrom/asset-upsert"
-	"mystrom/conf"
 
 	api "github.com/eliona-smart-building-assistant/go-eliona-api-client/v2"
-	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-eliona/client"
-	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
 
 func CreateAssets(config apiserver.Configuration, root assetupsert.Root) error {
 	for _, projectId := range *config.ProjectIDs {
-		rootAssetID, err := upsertRootAsset(config, projectId)
+		rootAssetID, err := assetupsert.CreateRoot(root, projectId)
 		if err != nil {
 			return fmt.Errorf("upserting root asset: %v", err)
 		}
@@ -39,7 +35,7 @@ func CreateAssets(config apiserver.Configuration, root assetupsert.Root) error {
 			if fc == nil {
 				continue
 			}
-			if err := assetupsert.TraverseFunctionalTree(fc, projectId, &rootAssetID, &rootAssetID); err != nil {
+			if err := assetupsert.TraverseFunctionalTree(fc, projectId, rootAssetID, rootAssetID); err != nil {
 				return fmt.Errorf("functional tree traversal: %v", err)
 			}
 		}
@@ -48,45 +44,12 @@ func CreateAssets(config apiserver.Configuration, root assetupsert.Root) error {
 			if lc == nil {
 				continue
 			}
-			if err := assetupsert.TraverseLocationalTree(lc, projectId, &rootAssetID, &rootAssetID); err != nil {
+			if err := assetupsert.TraverseLocationalTree(lc, projectId, rootAssetID, rootAssetID); err != nil {
 				return fmt.Errorf("locational tree traversal: %v", err)
 			}
 		}
 	}
 	return nil
-}
-
-// TODO: Might be part of the structure as well.
-func upsertRootAsset(config apiserver.Configuration, projectId string) (int32, error) {
-	// Get known asset id from configuration
-	currentAssetID, err := conf.GetAssetId(context.Background(), config, projectId, "mystrom_root")
-	if err != nil {
-		return 0, fmt.Errorf("finding asset ID: %v", err)
-	}
-	if currentAssetID != nil {
-		return *currentAssetID, nil
-	}
-
-	a := api.Asset{
-		ProjectId:             projectId,
-		GlobalAssetIdentifier: "mystrom_root",
-		Name:                  *api.NewNullableString(common.Ptr("myStrom")),
-		AssetType:             "mystrom_root",
-		Description:           *api.NewNullableString(common.Ptr("Root asset for myStrom devices")),
-	}
-	rootAssetID, err := asset.UpsertAsset(a)
-	if err != nil {
-		return 0, fmt.Errorf("upserting asset %+v into Eliona: %v", a, err)
-	}
-	if rootAssetID == nil {
-		return 0, fmt.Errorf("cannot create root asset")
-	}
-
-	if err := conf.InsertAsset(context.Background(), config, projectId, "mystrom_root", *rootAssetID, "mystrom_root"); err != nil {
-		return 0, fmt.Errorf("inserting asset to config db: %v", err)
-	}
-
-	return *rootAssetID, err
 }
 
 // TODO: Notify users. Currently not implemented.

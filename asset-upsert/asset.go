@@ -69,8 +69,11 @@ func TraverseFunctionalTree(node FunctionalNode, projectId string, locationalPar
 	return nil
 }
 
-func createAsset(ast Asset, projectId string, locationalParentAssetId *int32, functionalParentAssetId *int32) (*int32, error) {
+func CreateRoot(ast Asset, projectId string) (*int32, error) {
+	return createAsset(ast, projectId, nil, nil)
+}
 
+func createAsset(ast Asset, projectId string, locationalParentAssetId *int32, functionalParentAssetId *int32) (*int32, error) {
 	originalAssetID, err := ast.GetAssetID(projectId)
 	if err != nil {
 		return nil, fmt.Errorf("getting asset id: %v", err)
