@@ -177,7 +177,7 @@ func (r *Root) SetAssetID(assetID int32, projectID string) error {
 }
 
 func (r *Root) GetLocationalChildren() []assetupsert.LocationalNode {
-	locationalChildren := make([]assetupsert.LocationalNode, len(r.Rooms))
+	locationalChildren := make([]assetupsert.LocationalNode, 0)
 	for _, sw := range r.Rooms {
 		locationalChildren = append(locationalChildren, &sw)
 	}
