@@ -197,7 +197,7 @@ func InsertAsset(ctx context.Context, config apiserver.Configuration, projId str
 
 func GetAssetId(ctx context.Context, config apiserver.Configuration, projId string, globalAssetID string) (*int32, error) {
 	dbAsset, err := appdb.Assets(
-		appdb.AssetWhere.ConfigurationID.EQ(null.Int64FromPtr(config.Id).Int64),
+		appdb.AssetWhere.ConfigurationID.EQ(*config.Id),
 		appdb.AssetWhere.ProjectID.EQ(projId),
 		appdb.AssetWhere.GlobalAssetID.EQ(globalAssetID),
 	).AllG(ctx)

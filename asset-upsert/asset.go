@@ -118,6 +118,9 @@ func createAsset(ast Asset, projectId string, locationalParentAssetId *int32, fu
 	if err != nil {
 		return nil, created, fmt.Errorf("getting asset id: %v", err)
 	}
+	if originalAssetID != nil {
+		return originalAssetID, created, nil
+	}
 	a := api.Asset{
 		Id:                      *api.NewNullableInt32(originalAssetID),
 		ProjectId:               projectId,
