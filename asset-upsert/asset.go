@@ -34,7 +34,7 @@ type Asset interface {
 }
 
 func CreateAssets(root Root, projectId string) (createdCnt int, err error) {
-	rootAssetID, created, err := CreateRoot(root, projectId)
+	rootAssetID, created, err := createRoot(root, projectId)
 	if err != nil {
 		return createdCnt, fmt.Errorf("upserting root asset: %v", err)
 	}
@@ -45,7 +45,7 @@ func CreateAssets(root Root, projectId string) (createdCnt int, err error) {
 		if fc == nil {
 			continue
 		}
-		traverseCreated, err := TraverseFunctionalTree(fc, projectId, rootAssetID, rootAssetID)
+		traverseCreated, err := traverseFunctionalTree(fc, projectId, rootAssetID, rootAssetID)
 		if err != nil {
 			return createdCnt, fmt.Errorf("functional tree traversal: %v", err)
 		}
@@ -56,7 +56,7 @@ func CreateAssets(root Root, projectId string) (createdCnt int, err error) {
 		if lc == nil {
 			continue
 		}
-		traverseCreated, err := TraverseLocationalTree(lc, projectId, rootAssetID, rootAssetID)
+		traverseCreated, err := traverseLocationalTree(lc, projectId, rootAssetID, rootAssetID)
 		if err != nil {
 			return createdCnt, fmt.Errorf("locational tree traversal: %v", err)
 		}
@@ -65,7 +65,7 @@ func CreateAssets(root Root, projectId string) (createdCnt int, err error) {
 	return createdCnt, nil
 }
 
-func TraverseLocationalTree(node LocationalNode, projectId string, locationalParentAssetId, functionalParentAssetId *int32) (createdCnt int, err error) {
+func traverseLocationalTree(node LocationalNode, projectId string, locationalParentAssetId, functionalParentAssetId *int32) (createdCnt int, err error) {
 	currentAssetId, created, err := createAsset(node, projectId, locationalParentAssetId, functionalParentAssetId)
 	if err != nil {
 		return createdCnt, err
@@ -78,7 +78,7 @@ func TraverseLocationalTree(node LocationalNode, projectId string, locationalPar
 		if child == nil {
 			continue
 		}
-		traverseCreated, err := TraverseLocationalTree(child, projectId, currentAssetId, functionalParentAssetId)
+		traverseCreated, err := traverseLocationalTree(child, projectId, currentAssetId, functionalParentAssetId)
 		if err != nil {
 			return createdCnt, err
 		}
@@ -87,7 +87,7 @@ func TraverseLocationalTree(node LocationalNode, projectId string, locationalPar
 	return createdCnt, nil
 }
 
-func TraverseFunctionalTree(node FunctionalNode, projectId string, locationalParentAssetId, functionalParentAssetId *int32) (createdCnt int, err error) {
+func traverseFunctionalTree(node FunctionalNode, projectId string, locationalParentAssetId, functionalParentAssetId *int32) (createdCnt int, err error) {
 	currentAssetId, created, err := createAsset(node, projectId, locationalParentAssetId, functionalParentAssetId)
 	if err != nil {
 		return createdCnt, err
@@ -100,7 +100,7 @@ func TraverseFunctionalTree(node FunctionalNode, projectId string, locationalPar
 		if child == nil {
 			continue
 		}
-		traverseCreated, err := TraverseFunctionalTree(child, projectId, locationalParentAssetId, currentAssetId)
+		traverseCreated, err := traverseFunctionalTree(child, projectId, locationalParentAssetId, currentAssetId)
 		if err != nil {
 			return createdCnt, err
 		}
@@ -109,7 +109,7 @@ func TraverseFunctionalTree(node FunctionalNode, projectId string, locationalPar
 	return createdCnt, nil
 }
 
-func CreateRoot(ast Asset, projectId string) (assetId *int32, created bool, err error) {
+func createRoot(ast Asset, projectId string) (assetId *int32, created bool, err error) {
 	return createAsset(ast, projectId, nil, nil)
 }
 
