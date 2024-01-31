@@ -33,6 +33,31 @@ type Asset interface {
 	SetAssetID(assetID int32, projectID string) error
 }
 
+func CreateAssets(root Root, projectId string) error {
+	rootAssetID, err := CreateRoot(root, projectId)
+	if err != nil {
+		return fmt.Errorf("upserting root asset: %v", err)
+	}
+	for _, fc := range root.GetFunctionalChildren() {
+		if fc == nil {
+			continue
+		}
+		if err := TraverseFunctionalTree(fc, projectId, rootAssetID, rootAssetID); err != nil {
+			return fmt.Errorf("functional tree traversal: %v", err)
+		}
+	}
+
+	for _, lc := range root.GetLocationalChildren() {
+		if lc == nil {
+			continue
+		}
+		if err := TraverseLocationalTree(lc, projectId, rootAssetID, rootAssetID); err != nil {
+			return fmt.Errorf("locational tree traversal: %v", err)
+		}
+	}
+	return nil
+}
+
 func TraverseLocationalTree(node LocationalNode, projectId string, locationalParentAssetId, functionalParentAssetId *int32) error {
 	currentAssetId, err := createAsset(node, projectId, locationalParentAssetId, functionalParentAssetId)
 	if err != nil {

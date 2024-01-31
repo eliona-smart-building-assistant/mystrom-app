@@ -27,26 +27,9 @@ import (
 
 func CreateAssets(config apiserver.Configuration, root assetupsert.Root) error {
 	for _, projectId := range *config.ProjectIDs {
-		rootAssetID, err := assetupsert.CreateRoot(root, projectId)
+		err := assetupsert.CreateAssets(root, projectId)
 		if err != nil {
-			return fmt.Errorf("upserting root asset: %v", err)
-		}
-		for _, fc := range root.GetFunctionalChildren() {
-			if fc == nil {
-				continue
-			}
-			if err := assetupsert.TraverseFunctionalTree(fc, projectId, rootAssetID, rootAssetID); err != nil {
-				return fmt.Errorf("functional tree traversal: %v", err)
-			}
-		}
-
-		for _, lc := range root.GetLocationalChildren() {
-			if lc == nil {
-				continue
-			}
-			if err := assetupsert.TraverseLocationalTree(lc, projectId, rootAssetID, rootAssetID); err != nil {
-				return fmt.Errorf("locational tree traversal: %v", err)
-			}
+			return err
 		}
 	}
 	return nil
