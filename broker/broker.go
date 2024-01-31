@@ -62,7 +62,8 @@ func GetDevices(config apiserver.Configuration) (model.Root, error) {
 	}
 
 	root := model.Root{
-		Rooms: make(map[string]model.Room),
+		Rooms:  make(map[string]model.Room),
+		Config: &config,
 	}
 	for _, d := range resp.Devices {
 		if d.Type != "ws2" && d.Type != "wse" {
