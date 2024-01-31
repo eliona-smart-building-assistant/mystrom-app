@@ -33,75 +33,90 @@ type Asset interface {
 	SetAssetID(assetID int32, projectID string) error
 }
 
-func CreateAssets(root Root, projectId string) error {
-	rootAssetID, err := CreateRoot(root, projectId)
+func CreateAssets(root Root, projectId string) (createdCnt int, err error) {
+	rootAssetID, created, err := CreateRoot(root, projectId)
 	if err != nil {
-		return fmt.Errorf("upserting root asset: %v", err)
+		return createdCnt, fmt.Errorf("upserting root asset: %v", err)
+	}
+	if created {
+		createdCnt++
 	}
 	for _, fc := range root.GetFunctionalChildren() {
 		if fc == nil {
 			continue
 		}
-		if err := TraverseFunctionalTree(fc, projectId, rootAssetID, rootAssetID); err != nil {
-			return fmt.Errorf("functional tree traversal: %v", err)
+		traverseCreated, err := TraverseFunctionalTree(fc, projectId, rootAssetID, rootAssetID)
+		if err != nil {
+			return createdCnt, fmt.Errorf("functional tree traversal: %v", err)
 		}
+		createdCnt += traverseCreated
 	}
 
 	for _, lc := range root.GetLocationalChildren() {
 		if lc == nil {
 			continue
 		}
-		if err := TraverseLocationalTree(lc, projectId, rootAssetID, rootAssetID); err != nil {
-			return fmt.Errorf("locational tree traversal: %v", err)
+		traverseCreated, err := TraverseLocationalTree(lc, projectId, rootAssetID, rootAssetID)
+		if err != nil {
+			return createdCnt, fmt.Errorf("locational tree traversal: %v", err)
 		}
+		createdCnt += traverseCreated
 	}
-	return nil
+	return createdCnt, nil
 }
 
-func TraverseLocationalTree(node LocationalNode, projectId string, locationalParentAssetId, functionalParentAssetId *int32) error {
-	currentAssetId, err := createAsset(node, projectId, locationalParentAssetId, functionalParentAssetId)
+func TraverseLocationalTree(node LocationalNode, projectId string, locationalParentAssetId, functionalParentAssetId *int32) (createdCnt int, err error) {
+	currentAssetId, created, err := createAsset(node, projectId, locationalParentAssetId, functionalParentAssetId)
 	if err != nil {
-		return err
+		return createdCnt, err
+	}
+	if created {
+		createdCnt++
 	}
 
 	for _, child := range node.GetLocationalChildren() {
 		if child == nil {
 			continue
 		}
-		err := TraverseLocationalTree(child, projectId, currentAssetId, functionalParentAssetId)
+		traverseCreated, err := TraverseLocationalTree(child, projectId, currentAssetId, functionalParentAssetId)
 		if err != nil {
-			return err
+			return createdCnt, err
 		}
+		createdCnt += traverseCreated
 	}
-	return nil
+	return createdCnt, nil
 }
 
-func TraverseFunctionalTree(node FunctionalNode, projectId string, locationalParentAssetId, functionalParentAssetId *int32) error {
-	currentAssetId, err := createAsset(node, projectId, locationalParentAssetId, functionalParentAssetId)
+func TraverseFunctionalTree(node FunctionalNode, projectId string, locationalParentAssetId, functionalParentAssetId *int32) (createdCnt int, err error) {
+	currentAssetId, created, err := createAsset(node, projectId, locationalParentAssetId, functionalParentAssetId)
 	if err != nil {
-		return err
+		return createdCnt, err
+	}
+	if created {
+		createdCnt++
 	}
 
 	for _, child := range node.GetFunctionalChildren() {
 		if child == nil {
 			continue
 		}
-		err := TraverseFunctionalTree(child, projectId, locationalParentAssetId, currentAssetId)
+		traverseCreated, err := TraverseFunctionalTree(child, projectId, locationalParentAssetId, currentAssetId)
 		if err != nil {
-			return err
+			return createdCnt, err
 		}
+		createdCnt += traverseCreated
 	}
-	return nil
+	return createdCnt, nil
 }
 
-func CreateRoot(ast Asset, projectId string) (*int32, error) {
+func CreateRoot(ast Asset, projectId string) (assetId *int32, created bool, err error) {
 	return createAsset(ast, projectId, nil, nil)
 }
 
-func createAsset(ast Asset, projectId string, locationalParentAssetId *int32, functionalParentAssetId *int32) (*int32, error) {
+func createAsset(ast Asset, projectId string, locationalParentAssetId *int32, functionalParentAssetId *int32) (assetId *int32, created bool, err error) {
 	originalAssetID, err := ast.GetAssetID(projectId)
 	if err != nil {
-		return nil, fmt.Errorf("getting asset id: %v", err)
+		return nil, created, fmt.Errorf("getting asset id: %v", err)
 	}
 	a := api.Asset{
 		Id:                      *api.NewNullableInt32(originalAssetID),
@@ -115,14 +130,15 @@ func createAsset(ast Asset, projectId string, locationalParentAssetId *int32, fu
 	}
 	assetID, err := asset.UpsertAsset(a)
 	if err != nil {
-		return nil, fmt.Errorf("upserting asset %+v into Eliona: %v", a, err)
+		return nil, created, fmt.Errorf("upserting asset %+v into Eliona: %v", a, err)
 	}
 	if assetID == nil {
-		return nil, fmt.Errorf("cannot create asset %s", ast.GetName())
+		return nil, created, fmt.Errorf("cannot create asset %s", ast.GetName())
 	}
+	created = true
 
 	if err := ast.SetAssetID(*assetID, projectId); err != nil {
-		return nil, fmt.Errorf("setting asset id: %v", err)
+		return nil, created, fmt.Errorf("setting asset id: %v", err)
 	}
-	return assetID, nil
+	return assetID, created, nil
 }

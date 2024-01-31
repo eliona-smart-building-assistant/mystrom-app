@@ -27,15 +27,19 @@ import (
 
 func CreateAssets(config apiserver.Configuration, root assetupsert.Root) error {
 	for _, projectId := range *config.ProjectIDs {
-		err := assetupsert.CreateAssets(root, projectId)
+		assetsCreated, err := assetupsert.CreateAssets(root, projectId)
 		if err != nil {
 			return err
+		}
+		if assetsCreated != 0 {
+			if err := notifyUser(*config.UserId, projectId, assetsCreated); err != nil {
+				return fmt.Errorf("notifying user about CAC: %v", err)
+			}
 		}
 	}
 	return nil
 }
 
-// TODO: Notify users. Currently not implemented.
 func notifyUser(userId string, projectId string, assetsCreated int) error {
 	receipt, _, err := client.NewClient().CommunicationAPI.
 		PostNotification(client.AuthenticationContext()).
