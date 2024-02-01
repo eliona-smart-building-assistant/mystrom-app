@@ -21,7 +21,6 @@ import (
 	"mystrom/apiserver"
 	"mystrom/apiservices"
 	"mystrom/appdb"
-	assetupsert "mystrom/asset-upsert"
 	"mystrom/broker"
 	"mystrom/conf"
 	"mystrom/eliona"
@@ -31,6 +30,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-eliona/frontend"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	utilshttp "github.com/eliona-smart-building-assistant/go-utils/http"
@@ -97,7 +97,7 @@ func collectData() {
 }
 
 func collectResources(config apiserver.Configuration) error {
-	var _ assetupsert.FunctionalNode = (*model.Switch)(nil)
+	var _ asset.FunctionalNode = (*model.Switch)(nil)
 	root, err := broker.GetDevices(config)
 	if err != nil {
 		log.Error("broker", "getting root: %v", err)

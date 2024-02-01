@@ -18,16 +18,16 @@ package eliona
 import (
 	"fmt"
 	"mystrom/apiserver"
-	assetupsert "mystrom/asset-upsert"
 
 	api "github.com/eliona-smart-building-assistant/go-eliona-api-client/v2"
+	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-eliona/client"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
 
-func CreateAssets(config apiserver.Configuration, root assetupsert.Root) error {
+func CreateAssets(config apiserver.Configuration, root asset.Root) error {
 	for _, projectId := range *config.ProjectIDs {
-		assetsCreated, err := assetupsert.CreateAssets(root, projectId)
+		assetsCreated, err := asset.CreateAssets(root, projectId)
 		if err != nil {
 			return err
 		}

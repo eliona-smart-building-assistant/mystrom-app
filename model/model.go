@@ -19,9 +19,9 @@ import (
 	"context"
 	"fmt"
 	"mystrom/apiserver"
-	assetupsert "mystrom/asset-upsert"
 	"mystrom/conf"
 
+	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-eliona/utils"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 )
@@ -78,12 +78,12 @@ func (s *Switch) SetAssetID(assetID int32, projectID string) error {
 	return nil
 }
 
-func (s *Switch) GetLocationalChildren() []assetupsert.LocationalNode {
-	return []assetupsert.LocationalNode{}
+func (s *Switch) GetLocationalChildren() []asset.LocationalNode {
+	return []asset.LocationalNode{}
 }
 
-func (s *Switch) GetFunctionalChildren() []assetupsert.FunctionalNode {
-	return []assetupsert.FunctionalNode{}
+func (s *Switch) GetFunctionalChildren() []asset.FunctionalNode {
+	return []asset.FunctionalNode{}
 }
 
 type Room struct {
@@ -122,8 +122,8 @@ func (r *Room) SetAssetID(assetID int32, projectID string) error {
 	return nil
 }
 
-func (r *Room) GetLocationalChildren() []assetupsert.LocationalNode {
-	locationalChildren := make([]assetupsert.LocationalNode, len(r.Switches))
+func (r *Room) GetLocationalChildren() []asset.LocationalNode {
+	locationalChildren := make([]asset.LocationalNode, len(r.Switches))
 	for _, room := range r.Switches {
 		roomCopy := room // Create a copy of room
 		locationalChildren = append(locationalChildren, &roomCopy)
@@ -131,8 +131,8 @@ func (r *Room) GetLocationalChildren() []assetupsert.LocationalNode {
 	return locationalChildren
 }
 
-func (r *Room) GetFunctionalChildren() []assetupsert.FunctionalNode {
-	functionalChildren := make([]assetupsert.FunctionalNode, len(r.Switches))
+func (r *Room) GetFunctionalChildren() []asset.FunctionalNode {
+	functionalChildren := make([]asset.FunctionalNode, len(r.Switches))
 	for _, room := range r.Switches {
 		roomCopy := room // Create a copy of room
 		functionalChildren = append(functionalChildren, &roomCopy)
@@ -178,8 +178,8 @@ func (r *Root) SetAssetID(assetID int32, projectID string) error {
 	return nil
 }
 
-func (r *Root) GetLocationalChildren() []assetupsert.LocationalNode {
-	locationalChildren := make([]assetupsert.LocationalNode, 0)
+func (r *Root) GetLocationalChildren() []asset.LocationalNode {
+	locationalChildren := make([]asset.LocationalNode, 0)
 	for _, room := range r.Rooms {
 		roomCopy := room // Create a copy of room
 		locationalChildren = append(locationalChildren, &roomCopy)
@@ -187,8 +187,8 @@ func (r *Root) GetLocationalChildren() []assetupsert.LocationalNode {
 	return locationalChildren
 }
 
-func (r *Root) GetFunctionalChildren() []assetupsert.FunctionalNode {
-	functionalChildren := make([]assetupsert.FunctionalNode, len(r.Switches))
+func (r *Root) GetFunctionalChildren() []asset.FunctionalNode {
+	functionalChildren := make([]asset.FunctionalNode, len(r.Switches))
 	for i := range r.Switches {
 		functionalChildren[i] = &r.Switches[i]
 	}
