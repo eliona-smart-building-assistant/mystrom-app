@@ -24,11 +24,14 @@ import (
 	"mystrom/broker"
 	"mystrom/conf"
 	"mystrom/eliona"
+	"mystrom/model"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
 
+	"github.com/eliona-smart-building-assistant/go-eliona/asset"
+	"github.com/eliona-smart-building-assistant/go-eliona/frontend"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	utilshttp "github.com/eliona-smart-building-assistant/go-utils/http"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
@@ -94,16 +97,17 @@ func collectData() {
 }
 
 func collectResources(config apiserver.Configuration) error {
-	devices, err := broker.GetDevices(config)
+	var _ asset.FunctionalNode = (*model.Switch)(nil)
+	root, err := broker.GetDevices(config)
 	if err != nil {
-		log.Error("broker", "getting devices: %v", err)
+		log.Error("broker", "getting root: %v", err)
 		return err
 	}
-	if err := eliona.CreateAssetsIfNecessary(config, devices); err != nil {
-		log.Error("eliona", "creating tag assets: %v", err)
+	if err := eliona.CreateAssets(config, &root); err != nil {
+		log.Error("eliona", "creating assets: %v", err)
 		return err
 	}
-	if err := eliona.UpsertSwitchData(config, devices); err != nil {
+	if err := eliona.UpsertSwitchData(config, root.GetDevices()); err != nil {
 		log.Error("eliona", "inserting data into Eliona: %v", err)
 		return err
 	}
@@ -179,12 +183,13 @@ func outputData(asset appdb.Asset, config apiserver.Configuration, data map[stri
 
 // listenApi starts the API server and listen for requests
 func listenApi() {
-	err := http.ListenAndServe(":"+common.Getenv("API_SERVER_PORT", "3000"), utilshttp.NewCORSEnabledHandler(
-		apiserver.NewRouter(
-			apiserver.NewConfigurationAPIController(apiservices.NewConfigurationApiService()),
-			apiserver.NewVersionAPIController(apiservices.NewVersionApiService()),
-			apiserver.NewCustomizationAPIController(apiservices.NewCustomizationApiService()),
-		)),
-	)
+	err := http.ListenAndServe(":"+common.Getenv("API_SERVER_PORT", "3000"),
+		frontend.NewEnvironmentHandler(
+			utilshttp.NewCORSEnabledHandler(
+				apiserver.NewRouter(
+					apiserver.NewConfigurationAPIController(apiservices.NewConfigurationApiService()),
+					apiserver.NewVersionAPIController(apiservices.NewVersionApiService()),
+					apiserver.NewCustomizationAPIController(apiservices.NewCustomizationApiService()),
+				))))
 	log.Fatal("main", "API server: %v", err)
 }

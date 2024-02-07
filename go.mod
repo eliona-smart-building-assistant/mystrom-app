@@ -3,10 +3,10 @@ module mystrom
 go 1.20
 
 require (
-	github.com/eliona-smart-building-assistant/app-integration-tests v1.0.1
-	github.com/eliona-smart-building-assistant/go-eliona v1.9.23
-	github.com/eliona-smart-building-assistant/go-eliona-api-client/v2 v2.5.5
-	github.com/eliona-smart-building-assistant/go-utils v1.0.52
+	github.com/eliona-smart-building-assistant/app-integration-tests v1.1.0
+	github.com/eliona-smart-building-assistant/go-eliona v1.9.26
+	github.com/eliona-smart-building-assistant/go-eliona-api-client/v2 v2.6.1
+	github.com/eliona-smart-building-assistant/go-utils v1.0.53
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/websocket v1.5.1
@@ -24,6 +24,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/ericlagergren/decimal v0.0.0-20221120152707-495c53812d05 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.14.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect

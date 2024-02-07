@@ -23,6 +23,7 @@ import (
 	"mystrom/apiserver"
 	"mystrom/appdb"
 
+	"github.com/eliona-smart-building-assistant/go-eliona/frontend"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -31,7 +32,7 @@ import (
 var ErrBadRequest = errors.New("bad request")
 
 func InsertConfig(ctx context.Context, config apiserver.Configuration) (apiserver.Configuration, error) {
-	dbConfig, err := dbConfigFromApiConfig(config)
+	dbConfig, err := dbConfigFromApiConfig(ctx, config)
 	if err != nil {
 		return apiserver.Configuration{}, fmt.Errorf("creating DB config from API config: %v", err)
 	}
@@ -42,7 +43,7 @@ func InsertConfig(ctx context.Context, config apiserver.Configuration) (apiserve
 }
 
 func UpsertConfig(ctx context.Context, config apiserver.Configuration) (apiserver.Configuration, error) {
-	dbConfig, err := dbConfigFromApiConfig(config)
+	dbConfig, err := dbConfigFromApiConfig(ctx, config)
 	if err != nil {
 		return apiserver.Configuration{}, fmt.Errorf("creating DB config from API config: %v", err)
 	}
@@ -90,7 +91,7 @@ func DeleteConfig(ctx context.Context, configID int64) error {
 	return nil
 }
 
-func dbConfigFromApiConfig(apiConfig apiserver.Configuration) (dbConfig appdb.Configuration, err error) {
+func dbConfigFromApiConfig(ctx context.Context, apiConfig apiserver.Configuration) (dbConfig appdb.Configuration, err error) {
 	dbConfig.APIKey = apiConfig.ApiKey
 
 	dbConfig.ID = null.Int64FromPtr(apiConfig.Id).Int64
@@ -108,6 +109,11 @@ func dbConfigFromApiConfig(apiConfig apiserver.Configuration) (dbConfig appdb.Co
 	dbConfig.Active = null.BoolFromPtr(apiConfig.Active)
 	if apiConfig.ProjectIDs != nil {
 		dbConfig.ProjectIds = *apiConfig.ProjectIDs
+	}
+
+	env := frontend.GetEnvironment(ctx)
+	if env != nil {
+		dbConfig.UserID = null.StringFrom(env.UserId)
 	}
 
 	return dbConfig, nil
@@ -130,6 +136,7 @@ func apiConfigFromDbConfig(dbConfig *appdb.Configuration) (apiConfig apiserver.C
 	}
 	apiConfig.Active = dbConfig.Active.Ptr()
 	apiConfig.ProjectIDs = common.Ptr[[]string](dbConfig.ProjectIds)
+	apiConfig.UserId = dbConfig.UserID.Ptr()
 	return apiConfig, nil
 }
 
@@ -190,7 +197,7 @@ func InsertAsset(ctx context.Context, config apiserver.Configuration, projId str
 
 func GetAssetId(ctx context.Context, config apiserver.Configuration, projId string, globalAssetID string) (*int32, error) {
 	dbAsset, err := appdb.Assets(
-		appdb.AssetWhere.ConfigurationID.EQ(null.Int64FromPtr(config.Id).Int64),
+		appdb.AssetWhere.ConfigurationID.EQ(*config.Id),
 		appdb.AssetWhere.ProjectID.EQ(projId),
 		appdb.AssetWhere.GlobalAssetID.EQ(globalAssetID),
 	).AllG(ctx)
