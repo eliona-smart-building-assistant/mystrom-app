@@ -30,12 +30,28 @@ import (
 	"sync"
 	"time"
 
+	"github.com/eliona-smart-building-assistant/go-eliona/app"
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
+	"github.com/eliona-smart-building-assistant/go-eliona/dashboard"
 	"github.com/eliona-smart-building-assistant/go-eliona/frontend"
 	"github.com/eliona-smart-building-assistant/go-utils/common"
+	"github.com/eliona-smart-building-assistant/go-utils/db"
 	utilshttp "github.com/eliona-smart-building-assistant/go-utils/http"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
+
+func initialize() {
+	ctx := context.Background()
+
+	conn := db.NewInitConnectionWithContextAndApplicationName(ctx, app.AppName())
+	defer conn.Close(ctx)
+
+	app.Init(conn, app.AppName(),
+		app.ExecSqlFile("conf/init.sql"),
+		asset.InitAssetTypeFiles("resources/asset-types/*.json"),
+		dashboard.InitWidgetTypeFiles("resources/widget-types/*.json"),
+	)
+}
 
 var once sync.Once
 
