@@ -1,10 +1,10 @@
 module mystrom
 
-go 1.20
+go 1.22
 
 require (
 	github.com/eliona-smart-building-assistant/app-integration-tests v1.1.2
-	github.com/eliona-smart-building-assistant/go-eliona v1.9.37
+	github.com/eliona-smart-building-assistant/go-eliona v1.9.38
 	github.com/eliona-smart-building-assistant/go-eliona-api-client/v2 v2.6.12
 	github.com/eliona-smart-building-assistant/go-utils v1.1.1
 	github.com/friendsofgo/errors v0.9.2
@@ -40,8 +40,8 @@ require (
 	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/volatiletech/inflect v0.0.1 // indirect
 	github.com/volatiletech/randomize v0.0.1 // indirect
-	golang.org/x/crypto v0.22.0 // indirect
-	golang.org/x/net v0.24.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/crypto v0.23.0 // indirect
+	golang.org/x/net v0.25.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 )
