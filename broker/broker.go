@@ -66,8 +66,8 @@ func GetDevices(config apiserver.Configuration) (model.Root, error) {
 		Config: &config,
 	}
 	for _, d := range resp.Devices {
-		if d.Type != "ws2" && d.Type != "wse" {
-			// We suport only WS2 and WSE smart plugs.
+		if d.Type != "ws2" && d.Type != "wse" && d.Type != "lcs" {
+			// We suport only WS2, WSE and LCS smart plugs.
 			continue
 		}
 		relayState := 0
@@ -131,8 +131,8 @@ func GetData(config apiserver.Configuration) ([]model.Switch, error) {
 
 	var switches []model.Switch
 	for _, device := range resp.Devices {
-		if device.Type != "WS2" && device.Type != "WSE" {
-			// We suport only WS2 and WSE smart plugs.
+		if device.Type != "WS2" && device.Type != "WSE" && device.Type != "LCS" {
+			// We suport only WS2, WSE and LCS smart plugs.
 			continue
 		}
 		relayState := 0
