@@ -123,7 +123,7 @@ func (r *Room) SetAssetID(assetID int32, projectID string) error {
 }
 
 func (r *Room) GetLocationalChildren() []asset.LocationalNode {
-	locationalChildren := make([]asset.LocationalNode, len(r.Switches))
+	locationalChildren := make([]asset.LocationalNode, 0, len(r.Switches))
 	for _, room := range r.Switches {
 		roomCopy := room // Create a copy of room
 		locationalChildren = append(locationalChildren, &roomCopy)
@@ -132,7 +132,7 @@ func (r *Room) GetLocationalChildren() []asset.LocationalNode {
 }
 
 func (r *Room) GetFunctionalChildren() []asset.FunctionalNode {
-	functionalChildren := make([]asset.FunctionalNode, len(r.Switches))
+	functionalChildren := make([]asset.FunctionalNode, 0, len(r.Switches))
 	for _, room := range r.Switches {
 		roomCopy := room // Create a copy of room
 		functionalChildren = append(functionalChildren, &roomCopy)
