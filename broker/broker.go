@@ -46,11 +46,11 @@ type devicesResponse struct {
 func GetDevices(config apiserver.Configuration) (model.Root, error) {
 	// API v1 is called here for the rooms list. Be careful not to overuse it, though. No frequent
 	// polling should be done to api v1.
-	r, err := http.NewRequestWithApiKey("https://mystrom.ch/api/devices", "Auth-Token", config.ApiKey)
+	req, err := http.NewRequestWithApiKey("https://mystrom.ch/api/devices", "Auth-Token", config.ApiKey)
 	if err != nil {
 		return model.Root{}, fmt.Errorf("creating request for devices: %v", err)
 	}
-	resp, statusCode, err := http.ReadWithStatusCode[devicesResponse](r, time.Duration(*config.RequestTimeout)*time.Second, true)
+	resp, statusCode, err := http.ReadWithStatusCode[devicesResponse](req, time.Duration(*config.RequestTimeout)*time.Second, true)
 	if err != nil {
 		return model.Root{}, fmt.Errorf("querying API for devices: %v", err)
 	}
