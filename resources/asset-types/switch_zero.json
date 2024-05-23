@@ -1,0 +1,34 @@
+{
+	"attributes": [
+		{
+			"enable": true,
+			"name": "relay",
+			"subtype": "output",
+			"type": "inputs-and-switches",
+			"translation": {
+				"de": "Relais",
+				"en": "Relay"
+			},
+			"unit": null,
+			"map": [
+				{
+					"value": 0,
+					"text": "OFF"
+				},
+				{
+					"value": 1,
+					"text": "ON"
+				}
+			]
+		}
+	],
+	"custom": true,
+	"icon": null,
+	"name": "mystrom_switch_zero",
+	"translation": {
+		"de": "myStrom Schalter Zero",
+		"en": "myStrom Switch Zero"
+	},
+	"urldoc": "https://mystrom.ch",
+	"vendor": "myStrom"
+}
