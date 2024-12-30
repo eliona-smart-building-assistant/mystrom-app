@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"mystrom/apiserver"
 	"mystrom/conf"
-	"mystrom/model"
 
 	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
@@ -13,7 +12,7 @@ import (
 
 const ClientReference string = "myStrom-app"
 
-func UpsertSwitchData(config apiserver.Configuration, assets []model.Switch) error {
+func UpsertSwitchData(config apiserver.Configuration, assets []asset.Asset) error {
 	for _, projectId := range *config.ProjectIDs {
 		for _, a := range assets {
 			log.Debug("Eliona", "upserting data %+v for asset: config %d and asset '%v'", a, config.Id, a.GetGAI())
@@ -32,7 +31,7 @@ func UpsertSwitchData(config apiserver.Configuration, assets []model.Switch) err
 				Data:            a,
 				ClientReference: ClientReference,
 			}
-			if asset.UpsertAssetDataIfAssetExists(data); err != nil {
+			if err := asset.UpsertAssetDataIfAssetExists(data); err != nil {
 				return fmt.Errorf("upserting data: %v", err)
 			}
 		}

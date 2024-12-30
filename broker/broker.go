@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/eliona-smart-building-assistant/go-eliona/asset"
 	"github.com/eliona-smart-building-assistant/go-utils/http"
 	"github.com/eliona-smart-building-assistant/go-utils/log"
 )
@@ -46,11 +47,11 @@ type devicesResponse struct {
 func GetDevices(config apiserver.Configuration) (model.Root, error) {
 	// API v1 is called here for the rooms list. Be careful not to overuse it, though. No frequent
 	// polling should be done to api v1.
-	r, err := http.NewRequestWithApiKey("https://mystrom.ch/api/devices", "Auth-Token", config.ApiKey)
+	req, err := http.NewRequestWithApiKey("https://mystrom.ch/api/devices", "Auth-Token", config.ApiKey)
 	if err != nil {
 		return model.Root{}, fmt.Errorf("creating request for devices: %v", err)
 	}
-	resp, statusCode, err := http.ReadWithStatusCode[devicesResponse](r, time.Duration(*config.RequestTimeout)*time.Second, true)
+	resp, statusCode, err := http.ReadWithStatusCode[devicesResponse](req, time.Duration(*config.RequestTimeout)*time.Second, true)
 	if err != nil {
 		return model.Root{}, fmt.Errorf("querying API for devices: %v", err)
 	}
@@ -66,39 +67,68 @@ func GetDevices(config apiserver.Configuration) (model.Root, error) {
 		Config: &config,
 	}
 	for _, d := range resp.Devices {
-		if d.Type != "ws2" && d.Type != "wse" {
-			// We suport only WS2 and WSE smart plugs.
-			continue
-		}
-		relayState := 0
-		if d.State == "on" {
-			relayState = 1
-		}
-		s := model.Switch{
-			ID:     d.ID,
-			Name:   d.Name,
-			Power:  d.Power,
-			Temp:   d.WifiSwitchTemp,
-			Relay:  relayState,
-			Config: &config,
-		}
-		if adheres, err := s.AdheresToFilter(config.AssetFilter); err != nil {
-			return model.Root{}, fmt.Errorf("checking if adheres to filter: %v", err)
-		} else if !adheres {
-			continue
-		}
-		root.Switches = append(root.Switches, s)
-		r, ok := root.Rooms[d.Room.ID]
-		if !ok {
-			r = model.Room{
-				ID:       d.Room.ID,
-				Name:     d.Room.Name,
-				Switches: []model.Switch{},
-				Config:   &config,
+		switch d.Type {
+		case "ws2", "wse":
+			relayState := 0
+			if d.State == "on" {
+				relayState = 1
 			}
+			s := model.Switch{
+				ID:     d.ID,
+				Name:   d.Name,
+				Power:  d.Power,
+				Temp:   d.WifiSwitchTemp,
+				Relay:  relayState,
+				Config: &config,
+			}
+			if adheres, err := s.AdheresToFilter(config.AssetFilter); err != nil {
+				return model.Root{}, fmt.Errorf("checking if adheres to filter: %v", err)
+			} else if !adheres {
+				continue
+			}
+			root.Switches = append(root.Switches, &s)
+			r, ok := root.Rooms[d.Room.ID]
+			if !ok {
+				r = model.Room{
+					ID:       d.Room.ID,
+					Name:     d.Room.Name,
+					Switches: []asset.LocationalNode{},
+					Config:   &config,
+				}
+			}
+			r.Switches = append(r.Switches, &s)
+			root.Rooms[d.Room.ID] = r
+		case "lcs":
+			relayState := 0
+			if d.State == "on" {
+				relayState = 1
+			}
+			s := model.SwitchZero{
+				ID:     d.ID,
+				Name:   d.Name,
+				Relay:  relayState,
+				Config: &config,
+			}
+			if adheres, err := s.AdheresToFilter(config.AssetFilter); err != nil {
+				return model.Root{}, fmt.Errorf("checking if adheres to filter: %v", err)
+			} else if !adheres {
+				continue
+			}
+			root.Switches = append(root.Switches, &s)
+			r, ok := root.Rooms[d.Room.ID]
+			if !ok {
+				r = model.Room{
+					ID:       d.Room.ID,
+					Name:     d.Room.Name,
+					Switches: []asset.LocationalNode{},
+					Config:   &config,
+				}
+			}
+			r.Switches = append(r.Switches, &s)
+			root.Rooms[d.Room.ID] = r
+		default:
+			continue // We suport only WS2, WSE and LCS smart plugs.
 		}
-		r.Switches = append(r.Switches, s)
-		root.Rooms[d.Room.ID] = r
 	}
 	return root, nil
 }
@@ -114,7 +144,7 @@ type devicesResponseV2 struct {
 	} `json:"devices"`
 }
 
-func GetData(config apiserver.Configuration) ([]model.Switch, error) {
+func GetData(config apiserver.Configuration) ([]asset.Asset, error) {
 	// API v2 should be the preferred choice when communicating with myStrom. But ideally the
 	// fetching of data should be done using webhooks.
 	r, err := http.NewRequestWithApiKey("https://mystrom.ch/api/v2/devices", "Auth-Token", config.ApiKey)
@@ -129,23 +159,36 @@ func GetData(config apiserver.Configuration) ([]model.Switch, error) {
 		return nil, fmt.Errorf("querying API for devices: got status %v", statusCode)
 	}
 
-	var switches []model.Switch
+	var switches []asset.Asset
 	for _, device := range resp.Devices {
-		if device.Type != "WS2" && device.Type != "WSE" {
-			// We suport only WS2 and WSE smart plugs.
+		switch device.Type {
+
+		case "WS2", "WSE":
+			relayState := 0
+			if device.State == "ON" {
+				relayState = 1
+			}
+			switches = append(switches, &model.Switch{
+				ID:    device.ID,
+				Name:  device.Name,
+				Power: device.Power,
+				Temp:  device.Temperature,
+				Relay: relayState,
+			})
+		case "LCS":
+			relayState := 0
+			if device.State == "ON" {
+				relayState = 1
+			}
+			switches = append(switches, &model.SwitchZero{
+				ID:    device.ID,
+				Name:  device.Name,
+				Relay: relayState,
+			})
+		default:
+			// We suport only WS2, WSE and LCS smart plugs.
 			continue
 		}
-		relayState := 0
-		if device.State == "ON" {
-			relayState = 1
-		}
-		switches = append(switches, model.Switch{
-			ID:    device.ID,
-			Name:  device.Name,
-			Power: device.Power,
-			Temp:  device.Temperature,
-			Relay: relayState,
-		})
 	}
 
 	return switches, nil

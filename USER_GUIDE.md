@@ -26,7 +26,12 @@ The `myStrom Root` and `myStrom Room` asset types are created just to create a s
 |---------------|---------------|---------|
 | `Power` | Power  | input   |
 | `Temp` | Temp  | input   |
-| `RelayState` | Relay State  | input   |
+| `Relay`      | Relay        | output  |
+
+- *Switch Zero*: A simpler smart WiFi switch supporting only switching.
+
+| Attribute     | Description   | Subtype |
+|---------------|---------------|---------|
 | `Relay`      | Relay        | output  |
 
 ## Configuration

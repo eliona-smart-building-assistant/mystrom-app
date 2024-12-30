@@ -86,13 +86,70 @@ func (s *Switch) GetFunctionalChildren() []asset.FunctionalNode {
 	return []asset.FunctionalNode{}
 }
 
+type SwitchZero struct {
+	ID   string `eliona:"id"`
+	Name string `eliona:"name,filterable"`
+
+	Relay int `eliona:"relay" subtype:"output"`
+
+	Config *apiserver.Configuration
+}
+
+func (s *SwitchZero) AdheresToFilter(filter [][]apiserver.FilterRule) (bool, error) {
+	f := apiFilterToCommonFilter(filter)
+	fp, err := utils.StructToMap(s)
+	if err != nil {
+		return false, fmt.Errorf("converting strict to map: %v", err)
+	}
+	adheres, err := common.Filter(f, fp)
+	if err != nil {
+		return false, err
+	}
+	return adheres, nil
+}
+
+func (s *SwitchZero) GetName() string {
+	return s.Name
+}
+
+func (s *SwitchZero) GetDescription() string {
+	return ""
+}
+
+func (s *SwitchZero) GetAssetType() string {
+	return "mystrom_switch_zero"
+}
+
+func (s *SwitchZero) GetGAI() string {
+	return s.GetAssetType() + "_" + s.ID
+}
+
+func (s *SwitchZero) GetAssetID(projectID string) (*int32, error) {
+	return conf.GetAssetId(context.Background(), *s.Config, projectID, s.GetGAI())
+}
+
+func (s *SwitchZero) SetAssetID(assetID int32, projectID string) error {
+	if err := conf.InsertAsset(context.Background(), *s.Config, projectID, s.GetGAI(), assetID, s.ID); err != nil {
+		return fmt.Errorf("inserting asset to Config db: %v", err)
+	}
+	return nil
+}
+
+func (s *SwitchZero) GetLocationalChildren() []asset.LocationalNode {
+	return []asset.LocationalNode{}
+}
+
+func (s *SwitchZero) GetFunctionalChildren() []asset.FunctionalNode {
+	return []asset.FunctionalNode{}
+}
+
 type Room struct {
 	ID   string
 	Name string
 
-	Config *apiserver.Configuration // get rid of this
+	Config *apiserver.Configuration
 
-	Switches []Switch
+	Switches []asset.LocationalNode
 }
 
 func (r *Room) GetName() string {
@@ -123,32 +180,31 @@ func (r *Room) SetAssetID(assetID int32, projectID string) error {
 }
 
 func (r *Room) GetLocationalChildren() []asset.LocationalNode {
-	locationalChildren := make([]asset.LocationalNode, len(r.Switches))
+	locationalChildren := make([]asset.LocationalNode, 0, len(r.Switches))
 	for _, room := range r.Switches {
 		roomCopy := room // Create a copy of room
-		locationalChildren = append(locationalChildren, &roomCopy)
+		locationalChildren = append(locationalChildren, roomCopy)
 	}
 	return locationalChildren
 }
 
 func (r *Room) GetFunctionalChildren() []asset.FunctionalNode {
-	functionalChildren := make([]asset.FunctionalNode, len(r.Switches))
-	for _, room := range r.Switches {
-		roomCopy := room // Create a copy of room
-		functionalChildren = append(functionalChildren, &roomCopy)
-	}
-	return functionalChildren
+	return []asset.FunctionalNode{}
 }
 
 type Root struct {
 	Rooms    map[string]Room
-	Switches []Switch
+	Switches []asset.FunctionalNode
 
 	Config *apiserver.Configuration
 }
 
-func (r *Root) GetDevices() []Switch {
-	return r.Switches
+func (r *Root) GetDevices() []asset.Asset {
+	var devices []asset.Asset
+	for _, switchNode := range r.Switches {
+		devices = append(devices, switchNode)
+	}
+	return devices
 }
 
 func (r *Root) GetName() string {
@@ -190,7 +246,7 @@ func (r *Root) GetLocationalChildren() []asset.LocationalNode {
 func (r *Root) GetFunctionalChildren() []asset.FunctionalNode {
 	functionalChildren := make([]asset.FunctionalNode, len(r.Switches))
 	for i := range r.Switches {
-		functionalChildren[i] = &r.Switches[i]
+		functionalChildren[i] = r.Switches[i]
 	}
 	return functionalChildren
 }
